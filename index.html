@@ -73,6 +73,9 @@
   <div id="progreso-texto"></div>
 
   <script>
+    // Usa SIEMPRE el backend de Render
+    const BACKEND = 'https://backend-aqb5.onrender.com';
+
     // Cargar grupos al arrancar
     window.addEventListener('DOMContentLoaded', cargarGrupos);
 
@@ -82,7 +85,7 @@
       const grupoError = document.getElementById('grupo-error');
       grupoCargando.textContent = 'Cargando grupos...';
       grupoError.textContent = '';
-      fetch('https://backend-aqb5.onrender.com/api/grupos')
+      fetch(BACKEND + '/api/grupos')
         .then(async r => {
           if (!r.ok) {
             const txt = await r.text();
@@ -120,7 +123,6 @@
     }
 
     function generarExcel() {
-      // Lee parámetros del formulario
       const grupo     = document.getElementById('grupo').value.trim();
       const idioma    = document.getElementById('idioma').value;
       const descuento = Number(document.getElementById('descuento').value) || 0;
@@ -138,7 +140,7 @@
       document.getElementById('progress-inner').innerText = '0%';
       document.getElementById('progreso-texto').innerText = 'Iniciando...';
 
-      fetch('https://backend-aqb5.onrender.com/api/genera-excel-final-async'', {
+      fetch(BACKEND + '/api/genera-excel-final-async', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -164,7 +166,7 @@
     }
 
     function pollProgreso(jobId) {
-      fetch('/api/progreso/' + jobId)
+      fetch(BACKEND + '/api/progreso/' + jobId)
         .then(r => r.json())
         .then(status => {
           if (status.error) {
@@ -192,7 +194,7 @@
     }
 
     function descargarArchivo(jobId, filename) {
-      fetch('/api/descarga-excel/' + jobId)
+      fetch(BACKEND + '/api/descarga-excel/' + jobId)
         .then(r => r.blob())
         .then(blob => {
           const url = window.URL.createObjectURL(blob);
