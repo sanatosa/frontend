@@ -28,6 +28,8 @@
     }
     button[disabled] { opacity: 0.7; background: #bbb; cursor: not-allowed; }
     .campo { margin-bottom: 12px; }
+    #grupo-cargando { color: #555; font-size: 15px; margin-left: 8px; }
+    #grupo-error { color: red; font-size: 15px; margin-left: 8px; }
   </style>
 </head>
 <body>
@@ -35,8 +37,12 @@
 
   <div class="campo">
     <label for="grupo">Grupo:</label>
-    <input type="text" id="grupo" value="CARNAVAL" style="width:200px;" />
-    <small>(escribe el nombre EXACTO del grupo, según el Excel)</small>
+    <select id="grupo" disabled>
+      <option>Cargando grupos...</option>
+    </select>
+    <span id="grupo-cargando"></span>
+    <span id="grupo-error"></span>
+    <small style="display:block;">(elige el nombre EXACTO del grupo, según el Excel)</small>
   </div>
   <div class="campo">
     <label for="idioma">Idioma:</label>
@@ -59,7 +65,7 @@
     <input type="number" id="maxFilas" value="50" min="1" max="1000" style="width:70px;">
   </div>
 
-  <button id="generar" onclick="generarExcel()">Generar listado</button>
+  <button id="generar" onclick="generarExcel()" disabled>Generar listado</button>
 
   <div id="progress-bar">
     <div id="progress-inner">0%</div>
@@ -67,6 +73,52 @@
   <div id="progreso-texto"></div>
 
   <script>
+    // Cargar grupos al arrancar
+    window.addEventListener('DOMContentLoaded', cargarGrupos);
+
+    function cargarGrupos() {
+      const grupoSelect = document.getElementById('grupo');
+      const grupoCargando = document.getElementById('grupo-cargando');
+      const grupoError = document.getElementById('grupo-error');
+      grupoCargando.textContent = 'Cargando grupos...';
+      grupoError.textContent = '';
+      fetch('/api/grupos')
+        .then(async r => {
+          if (!r.ok) {
+            const txt = await r.text();
+            throw new Error(txt || "No se pudo obtener la lista de grupos.");
+          }
+          return r.json();
+        })
+        .then(data => {
+          grupoSelect.innerHTML = '';
+          if (!data.grupos || !data.grupos.length) {
+            grupoSelect.disabled = true;
+            grupoCargando.textContent = '';
+            grupoError.textContent = 'No hay grupos disponibles';
+            document.getElementById('generar').disabled = true;
+            return;
+          }
+          data.grupos.forEach(grupo => {
+            const op = document.createElement('option');
+            op.value = grupo;
+            op.textContent = grupo;
+            grupoSelect.appendChild(op);
+          });
+          grupoSelect.disabled = false;
+          grupoCargando.textContent = '';
+          grupoError.textContent = '';
+          document.getElementById('generar').disabled = false;
+        })
+        .catch(e => {
+          grupoSelect.innerHTML = '<option>Error cargando grupos</option>';
+          grupoSelect.disabled = true;
+          grupoCargando.textContent = '';
+          grupoError.textContent = 'Error: ' + e.message;
+          document.getElementById('generar').disabled = true;
+        });
+    }
+
     function generarExcel() {
       // Lee parámetros del formulario
       const grupo     = document.getElementById('grupo').value.trim();
@@ -76,7 +128,7 @@
       const maxFilas  = Number(document.getElementById('maxFilas').value) || 50;
 
       if (!grupo) {
-        alert("Por favor, escribe el nombre del grupo.");
+        alert("Por favor, elige el grupo.");
         return;
       }
 
@@ -93,7 +145,13 @@
           grupo, idioma, descuento, soloStock, maxFilas
         })
       })
-      .then(r => r.json())
+      .then(async r => {
+        if (!r.ok) {
+          const txt = await r.text();
+          throw new Error('Error HTTP: ' + r.status + ' - ' + txt);
+        }
+        return r.json();
+      })
       .then(data => {
         if (!data.jobId) throw new Error('No se recibió jobId');
         pollProgreso(data.jobId);
