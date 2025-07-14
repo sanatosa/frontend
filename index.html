@@ -138,7 +138,7 @@
       document.getElementById('progress-inner').innerText = '0%';
       document.getElementById('progreso-texto').innerText = 'Iniciando...';
 
-      fetch('/api/genera-excel-final-async', {
+      fetch('https://backend-aqb5.onrender.com/api/genera-excel-final-async'', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
