@@ -82,7 +82,7 @@
       const grupoError = document.getElementById('grupo-error');
       grupoCargando.textContent = 'Cargando grupos...';
       grupoError.textContent = '';
-      fetch('/api/grupos')
+      fetch('https://backend-aqb5.onrender.com/api/grupos')
         .then(async r => {
           if (!r.ok) {
             const txt = await r.text();
