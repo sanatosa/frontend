@@ -34,7 +34,7 @@
   <div id="msg"></div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script>
-    const GRUPOS_XLSX_URL = "https://proxy-8i4b.onrender.com/grupos.xlsx";
+    const GRUPOS_XLSX_URL = "https://backend-aqb5.onrender.com/grupos.xlsx";
 
     async function cargarGrupos() {
       const msg = document.getElementById('msg');
@@ -92,7 +92,7 @@
       document.getElementById('descargarBtn').disabled = true;
 
       try {
-        const resp = await fetch('https://proxy-8i4b.onrender.com/api/genera-excel', {
+        const resp = await fetch('https://backend-aqb5.onrender.com/api/genera-excel', {
           method: 'POST',
           headers: {'Content-Type':'application/json'},
           body: JSON.stringify({grupo, idioma})
