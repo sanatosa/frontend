@@ -5,7 +5,320 @@
   <title>Buscador de Artículos ATOSA</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
-    /* ... (todo tu CSS igual, omito para espacio, puedes pegar el tuyo) ... */
+    body {
+      font-family: system-ui, Arial, sans-serif;
+      background: #fafafc;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 650px;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+    h1 {
+      font-size: 1.6rem;
+      margin: 1.3rem 0 0.8rem 0;
+      color: #222;
+      text-align: center;
+    }
+    #searchForm {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    #searchInput {
+      flex: 1 1 250px;
+      padding: 0.6rem;
+      border: 1px solid #bbb;
+      border-radius: 4px;
+      font-size: 1rem;
+      max-width: 330px;
+    }
+    #searchForm button {
+      padding: 0.6rem 1.3rem;
+      background: #4276c6;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    #searchForm button:hover,
+    #searchForm button:focus {
+      background: #295ea8;
+    }
+    #results {
+      margin-top: 1rem;
+    }
+    .result, .similares-result {
+      background: #fff;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.75rem;
+      box-shadow: 0 1px 5px #0001;
+      padding: 0.4rem 0.7rem;
+      cursor: pointer;
+      transition: box-shadow 0.2s, transform 0.1s;
+      outline: none;
+      min-height: 68px;
+      position: relative;
+    }
+    .result:active, .result:focus,
+    .similares-result:active, .similares-result:focus {
+      box-shadow: 0 2px 16px #0002;
+      transform: scale(1.015);
+    }
+    .img-wrapper {
+      position: relative;
+      display: inline-block;
+    }
+    .result img, .similares-result img {
+      width: 60px;
+      height: 45px;
+      object-fit: contain;
+      background: #f3f3f3;
+      border-radius: 6px;
+      flex-shrink: 0;
+      background: #f3f3f3 url('data:image/svg+xml;utf8,<svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="15" cy="15" r="13" stroke="%23bbb" stroke-width="4" stroke-dasharray="30 30" stroke-linecap="round"><animateTransform attributeName="transform" type="rotate" from="0 15 15" to="360 15 15" dur="1s" repeatCount="indefinite"/></circle></svg>') center/20px no-repeat;
+      margin-right: 14px;
+      transition: opacity 0.2s;
+    }
+    .recarga-btn {
+      display: none;
+      position: absolute;
+      right: 9px;
+      bottom: 7px;
+      background: #fff;
+      border-radius: 50%;
+      border: 1.5px solid #4276c6;
+      box-shadow: 0 1.5px 4px #0002;
+      width: 22px;
+      height: 22px;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      z-index: 2;
+      transition: background 0.17s;
+    }
+    .recarga-btn svg {
+      width: 16px;
+      height: 16px;
+      vertical-align: middle;
+      fill: #295ea8;
+    }
+    .img-wrapper.fallo .recarga-btn {
+      display: flex;
+    }
+    .recarga-btn:active {
+      background: #e3eefe;
+    }
+    .img-wrapper.reloading img {
+      opacity: 0.4;
+      filter: grayscale(0.6);
+    }
+    .result-info, .similares-info {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+    .result-title, .similares-title {
+      font-weight: 600;
+      color: #2a2a2a;
+      font-size: 1.08rem;
+      margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .result-code, .similares-code {
+      font-size: 0.98rem;
+      color: #4176c6;
+      margin-bottom: 1px;
+    }
+    .result-stock, .similares-stock-ok, .similares-stock-zero, .detalle-stock-ok, .detalle-stock-zero {
+      font-size: 0.97rem;
+    }
+    .stock-zero, .similares-stock-zero, .detalle-stock-zero {
+      color: #bb2323;
+      font-weight: bold;
+    }
+    .stock-ok, .similares-stock-ok, .detalle-stock-ok {
+      color: #228022;
+    }
+    .no-result, .error-msg {
+      text-align: center;
+      color: #888;
+      margin: 2.5rem 0 1.5rem 0;
+      font-size: 1.1rem;
+    }
+    .error-msg {
+      color: #bb2323;
+      font-weight: bold;
+    }
+    .pantalla-detalle {
+      margin-top: 1rem;
+      animation: fadeIn 0.18s;
+    }
+    .detalle-full {
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 2px 14px #0002;
+      padding: 1.5rem 1.2rem 1.4rem 1.2rem;
+      margin-bottom: 1.4rem;
+      text-align: center;
+      position: relative;
+    }
+    .detalle-img-grande {
+      width: 220px;
+      height: 160px;
+      object-fit: contain;
+      border-radius: 12px;
+      background: #f3f3f3;
+      margin-bottom: 1.2rem;
+      box-shadow: 0 1px 7px #0001;
+      max-width: 98vw;
+    }
+    .detalle-nombre {
+      font-size: 1.33rem;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+      color: #1a1a21;
+      word-break: break-word;
+    }
+    .detalle-codigo {
+      color: #4176c6;
+      margin-bottom: 0.7rem;
+      font-size: 1.09rem;
+      font-weight: 500;
+    }
+    .detalle-stock-ok, .detalle-stock-zero {
+      font-size: 1.05rem;
+      margin-bottom: 0.6em;
+    }
+    .volver-btn {
+      display: inline-block;
+      margin-bottom: 1.2rem;
+      background: #eee;
+      color: #295ea8;
+      font-size: 1rem;
+      border: none;
+      border-radius: 5px;
+      padding: 0.45em 1.1em;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+    .volver-btn:hover,
+    .volver-btn:focus {
+      background: #e1eaff;
+    }
+    .similares-lista {
+      margin-top: 0.7rem;
+      background: #f7faff;
+      border-radius: 9px;
+      padding: 0.7rem 0.5rem 0.2rem 0.5rem;
+      box-shadow: 0 1px 5px #0001;
+      animation: fadeIn 0.15s;
+    }
+    .similares-titulo {
+      font-size: 1.05rem;
+      font-weight: 500;
+      color: #295ea8;
+      margin-bottom: 0.5em;
+      margin-left: 4px;
+    }
+    .similares-result {
+      background: #fff;
+      margin-bottom: 0.4rem;
+      border-radius: 8px;
+      padding: 0.4rem 0.7rem;
+      display: flex;
+      align-items: center;
+      box-shadow: 0 1px 3px #0001;
+      min-height: 60px;
+      cursor: pointer;
+      outline: none;
+      transition: box-shadow 0.2s, transform 0.1s;
+    }
+    .similares-result:active,
+    .similares-result:focus {
+      box-shadow: 0 2px 14px #0002;
+      transform: scale(1.015);
+    }
+    .similares-result img {
+      width: 48px;
+      height: 36px;
+      margin-right: 13px;
+      border-radius: 5px;
+    }
+    .similares-info {
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+    .similares-title {
+      font-size: 1.02rem;
+      font-weight: 500;
+      color: #1a1a21;
+      margin-bottom: 1px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .similares-code {
+      font-size: 0.93rem;
+      color: #4176c6;
+      margin-bottom: 0.5px;
+    }
+    .similares-empty {
+      color: #888;
+      text-align: center;
+      font-size: 0.98rem;
+      margin: 0.7em 0 0.5em 0;
+    }
+    .spinner-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 2.7rem 0 2.4rem 0;
+      font-size: 1.1rem;
+      color: #295ea8;
+      min-height: 100px;
+    }
+    .spinner {
+      width: 43px;
+      height: 43px;
+      border: 5px solid #e7eefe;
+      border-top: 5px solid #295ea8;
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+      margin-bottom: 1.1em;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0);}
+      100% { transform: rotate(360deg);}
+    }
+    @media (max-width: 600px) {
+      .container {
+        padding: 0.4rem;
+      }
+      .detalle-img-grande {
+        width: 97vw;
+        height: 31vw;
+        min-height: 60px;
+        max-width: 97vw;
+      }
+      .detalle-full { padding: 1.1rem 0.25rem 1.1rem 0.25rem;}
+      .similares-lista { padding: 0.6rem 0.1rem 0.2rem 0.1rem; }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95);}
+      to { opacity: 1; transform: scale(1);}
+    }
   </style>
 </head>
 <body>
@@ -18,11 +331,16 @@
     <div id="results"></div>
   </div>
   <script>
+    // AQUÍ ESTÁ LA URL DEL BACKEND:
     const PROXY_BASE = "https://backend-aqb5.onrender.com";
     const LIMITE_RESULTADOS = 30;
     const MAX_CONCURRENCY = 2;
 
-    // ... (el resto del JS igual que el tuyo, solo corrijo fetches con control de error) ...
+    const palabras_ignorar = new Set([
+      "disfraz", "disfraces", "b.sol/", "set", "b/sol", "b/sol/cart", "b/slp", "slp", "sol", "b/cart", "cart", "cm",
+      "tubo", "sol/gorra", "niño", "niña", "talla", "adulto", "para", "de", "el", "la", "los",
+      "las", "y", "con", "del", "en", "set", "pack", "un", "una", "por", "a", "m", "l", "s", "xl", "xs", "xxl", "c/v", "bl.", "bl", "xxxl"
+    ].map(x => normaliza(x)));
 
     function normaliza(texto) {
       return (texto || "")
@@ -31,11 +349,6 @@
         .replace(/[\u0300-\u036f]/g, "")
         .toLowerCase();
     }
-    const palabras_ignorar = new Set([
-      "disfraz", "disfraces", "b.sol/", "set", "b/sol", "b/sol/cart", "b/slp", "slp", "sol", "b/cart", "cart", "cm",
-      "tubo", "sol/gorra", "niño", "niña", "talla", "adulto", "para", "de", "el", "la", "los",
-      "las", "y", "con", "del", "en", "set", "pack", "un", "una", "por", "a", "m", "l", "s", "xl", "xs", "xxl", "c/v", "bl.", "bl", "xxxl"
-    ].map(x => normaliza(x)));
     function extraerPalabrasClave(nombre) {
       return normaliza(nombre)
         .replace(/[.,;:\/\-]/g, " ")
@@ -45,55 +358,51 @@
     async function buscarArticulos(termino) {
       let results = [];
       let limiteAlcanzado = false;
-      try {
-        if (/^\d+$/.test(termino.trim())) {
-          let url = `${PROXY_BASE}/articulos/${termino}`;
-          let res = await fetch(url);
-          if (res.ok) {
-            let art = await res.json();
-            if (Array.isArray(art)) {
-              results = art;
-            } else if (art && art.codigo) {
-              results = [art];
-            }
-            if (results.length === 1 && results[0].descripcion) {
-              const desc = results[0].descripcion;
-              let descUrl = `${PROXY_BASE}/articulos/descripcion/${encodeURIComponent(desc)}`;
-              let descRes = await fetch(descUrl);
-              if (descRes.ok) {
-                let descData = await descRes.json();
-                if (Array.isArray(descData)) {
-                  let similares = descData.filter(a => a.codigo !== results[0].codigo);
-                  if (similares.length > LIMITE_RESULTADOS) {
-                    similares = similares.slice(0, LIMITE_RESULTADOS);
-                    limiteAlcanzado = true;
-                  }
-                  results[0]._similares = similares;
-                  results[0]._limiteSimilares = limiteAlcanzado;
+      if (/^\d+$/.test(termino.trim())) {
+        let url = `${PROXY_BASE}/articulos/${termino}`;
+        let res = await fetch(url);
+        if (res.ok) {
+          let art = await res.json();
+          if (Array.isArray(art)) {
+            results = art;
+          } else if (art && art.codigo) {
+            results = [art];
+          }
+          if (results.length === 1 && results[0].descripcion) {
+            const desc = results[0].descripcion;
+            let descUrl = `${PROXY_BASE}/articulos/descripcion/${encodeURIComponent(desc)}`;
+            let descRes = await fetch(descUrl);
+            if (descRes.ok) {
+              let descData = await descRes.json();
+              if (Array.isArray(descData)) {
+                let similares = descData.filter(a => a.codigo !== results[0].codigo);
+                if (similares.length > LIMITE_RESULTADOS) {
+                  similares = similares.slice(0, LIMITE_RESULTADOS);
+                  limiteAlcanzado = true;
                 }
+                results[0]._similares = similares;
+                results[0]._limiteSimilares = limiteAlcanzado;
               }
             }
           }
         }
-        if (!/^\d+$/.test(termino.trim()) || results.length === 0) {
-          let url = `${PROXY_BASE}/articulos/descripcion/${encodeURIComponent(termino)}`;
-          let res = await fetch(url);
-          if (res.ok) {
-            let data = await res.json();
-            if (Array.isArray(data)) {
-              if (data.length > LIMITE_RESULTADOS) {
-                limiteAlcanzado = true;
-                data = data.slice(0, LIMITE_RESULTADOS);
-              }
-              const codigos = new Set(results.map(a => a.codigo));
-              for (let a of data) {
-                if (!codigos.has(a.codigo)) results.push(a);
-              }
+      }
+      if (!/^\d+$/.test(termino.trim()) || results.length === 0) {
+        let url = `${PROXY_BASE}/articulos/descripcion/${encodeURIComponent(termino)}`;
+        let res = await fetch(url);
+        if (res.ok) {
+          let data = await res.json();
+          if (Array.isArray(data)) {
+            if (data.length > LIMITE_RESULTADOS) {
+              limiteAlcanzado = true;
+              data = data.slice(0, LIMITE_RESULTADOS);
+            }
+            const codigos = new Set(results.map(a => a.codigo));
+            for (let a of data) {
+              if (!codigos.has(a.codigo)) results.push(a);
             }
           }
         }
-      } catch (err) {
-        // Si hay error en fetch (network o CORS), results vacíos
       }
       return { results, limiteAlcanzado };
     }
@@ -291,6 +600,7 @@
         }
       }
       div.querySelector("#similaresContainer").innerHTML = createSimilaresHTML(similares, limiteSimilares);
+      // Carga imágenes de similares en paralelo pero limitadas
       let tareas = similares.map((a, idx) => async () => {
         const codigo = a.codigo ? String(a.codigo) : '';
         const imgId = `simimg-${codigo || 'idx' + idx}`;
@@ -340,7 +650,6 @@
     function getSinImagenSVG() {
       return 'data:image/svg+xml;utf8,<svg width="100" height="70" xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="%23eee"/><text x="50%" y="50%" font-size="12" fill="%23999" text-anchor="middle" dominant-baseline="middle">Sin imagen</text></svg>';
     }
-
     document.getElementById("searchForm").addEventListener("submit", async function(e){
       e.preventDefault();
       const termino = document.getElementById("searchInput").value.trim();
@@ -357,15 +666,16 @@
         ultimosArticulos = results;
         searchLimiteAlcanzado = limiteAlcanzado;
         if (!results.length) {
-          resultsDiv.innerHTML = "<div class='no-result'>No se encontraron resultados. ¿Seguro que existe ese artículo?</div>";
+          resultsDiv.innerHTML = "<div class='no-result'>No se encontraron resultados.</div>";
           return;
         }
         await renderResults();
       } catch (err) {
-        resultsDiv.innerHTML = "<div class='error-msg'>Error consultando el backend: " + (err.message || err) + "</div>";
+        resultsDiv.innerHTML = "<div class='error-msg'>Error: " + err.message + "</div>";
       }
     });
     document.getElementById("results").addEventListener("click", async function(e){
+      // Botón recarga imagen
       if (e.target.closest && e.target.closest('.recarga-btn')) {
         e.stopPropagation();
         const btn = e.target.closest('.recarga-btn');
