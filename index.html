@@ -2,169 +2,235 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Listado ATOSA</title>
+  <title>Catálogo ATOSA</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --color-primario: #7c3aed;
-      --color-header: #faf5ff;
-      --color-btn: #a78bfa;
-      --color-btn-hover: #7c3aed;
-      --color-card: #fff;
-      --color-txt: #222;
-      --color-fondo: #f4f2fa;
+      --primary: #5b21b6;
+      --primary-light: #ede9fe;
+      --accent: #f1f5f9;
+      --btn: #6d28d9;
+      --btn-hover: #7c3aed;
+      --error: #dc2626;
+      --success: #22c55e;
     }
-    html, body { height: 100%; margin: 0; font-family: 'Segoe UI', Arial, sans-serif; background: var(--color-fondo);}
-    body { width: 100vw; min-height: 100vh; margin: 0; }
+
+    body {
+      font-family: 'Inter', Arial, sans-serif;
+      background: var(--accent);
+      margin: 0; padding: 0;
+      min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center;
+    }
+
     header {
-      background: var(--color-primario); color: white; padding: 18px 0 13px 0; text-align: center;
-      box-shadow: 0 2px 12px #0002;
-      position: sticky; top: 0; z-index: 10;
+      width: 100%; background: white;
+      box-shadow: 0 2px 8px #0001; padding: 24px 0 14px 0;
+      text-align: center; position: sticky; top: 0; z-index: 99;
     }
-    h1 { margin: 0 0 7px 0; font-size: 2.1rem; font-weight: 700; }
-    .logo { height: 46px; margin-bottom: 9px; }
-    .container {
-      max-width: 500px; margin: 32px auto 32px auto; background: var(--color-card); border-radius: 18px; box-shadow: 0 3px 20px #0001;
-      padding: 30px 15px 18px 15px;
+
+    h1 {
+      color: var(--primary); font-weight: 700; font-size: 2.1rem; margin: 0 0 7px 0;
+      letter-spacing: 1px;
     }
-    @media (max-width: 650px) {
-      .container { margin: 13px 4vw 13vw 4vw; box-shadow: none;}
-      h1 { font-size: 1.54rem;}
+    .desc { color: #78716c; font-size: 1.12rem; }
+
+    .main-card {
+      background: #fff; border-radius: 24px;
+      margin: 34px 0 32px 0; box-shadow: 0 3px 30px #27083810;
+      max-width: 480px; width: 98vw; padding: 38px 4vw 22px 4vw;
     }
-    form label { font-weight: 600; margin-bottom: 2px; font-size: 1.07rem; }
-    form select, form input[type="checkbox"] {
-      font-size: 1.1rem; padding: 10px; margin: 7px 0 22px 0; width: 100%; border-radius: 9px; border: 1px solid #ddd;
-      box-sizing: border-box;
+    @media (max-width: 650px) { .main-card { margin: 14px 0 12vw 0; } }
+    form { display: flex; flex-direction: column; gap: 14px;}
+    label { display: block; color: var(--primary); font-weight: 600; letter-spacing: 0.2px; margin-bottom: 2px;}
+    select, input[type="checkbox"] {
+      width: 100%; font-size: 1.04rem; padding: 11px 12px;
+      border-radius: 11px; border: 1.5px solid var(--primary-light); margin-top: 2px;
+      font-family: inherit; appearance: none; outline: none;
+      background: #f6f6fb;
+      transition: box-shadow .15s;
     }
-    form .row { display: flex; gap: 12px; }
-    form .row > div { flex: 1; }
+    select:focus { border-color: var(--primary); box-shadow: 0 0 0 2px #c7d2fe60;}
+    /* Row for idioma+descuento (moderno grid) */
+    .flex-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px;}
+    .check-row { display: flex; align-items: center; gap:10px; }
+    .check-row label { margin: 0; font-weight: 400; color:#6366f1; }
+    .switch {
+      position: relative; display: inline-block; width: 42px; height: 24px;
+    }
+    .switch input { opacity: 0; width: 0; height: 0;}
+    .slider {
+      position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+      background: #e5e7eb; border-radius:24px; transition:.2s;
+    }
+    .slider:before {
+      position: absolute; content: ""; left: 4px; top: 4px; width: 16px; height: 16px;
+      background: var(--primary); border-radius: 50%; transition: 0.2s;}
+    .switch input:checked + .slider { background: #d1fae5;}
+    .switch input:checked + .slider:before { transform: translateX(18px);}
     button {
-      background: var(--color-btn); color: white; font-weight: 700; border: none; border-radius: 12px; padding: 17px 0;
-      width: 100%; font-size: 1.2rem; cursor: pointer; transition: background .15s;
-      box-shadow: 0 2px 6px #aaa2;
+      width: 100%; background: var(--btn); color: #fff; border: none;
+      font-size: 1.18rem; border-radius: 13px; font-weight: 700;
+      padding: 16px 0; margin-top: 18px; letter-spacing: .4px;
+      box-shadow: 0 4px 14px #8b5cf622; cursor: pointer;
+      transition: background .17s;
     }
-    button:hover, button:focus { background: var(--color-btn-hover);}
-    .progreso-area {
-      margin: 22px 0 17px 0;
-      text-align: center;
-    }
+    button:disabled { background: #e0e7ef; color: #bbb; cursor: not-allowed;}
+    button:hover, button:focus { background: var(--btn-hover);}
+    .progress-cont { margin-top:28px; }
     progress {
-      width: 95%; height: 18px; border-radius: 10px;
-      margin-bottom:7px; margin-top: 9px;
-      accent-color: var(--color-primario);
-      background: #eee;
+      width: 100%; height: 19px; border-radius: 10px; background: #e0e7ef;
+      accent-color: var(--primary);
+      appearance: none; /* Edge fallback */
     }
-    .aviso { color: #b91c1c; font-weight: bold; margin-top: 10px; margin-bottom: 15px; text-align:center; }
-    #estado { font-weight: 500; color: #444; margin-top: 8px; min-height: 22px; }
-    @media (max-width:400px) {
-      .container { padding: 7vw 2vw 5vw 2vw; }
-      button { font-size: 1.04rem;}
+    .estado-txt {
+      margin: 12px 0 0 0; min-height: 26px; color: var(--primary); font-size: 1.08rem; font-weight: 600;
+      text-align:center; transition:.12s;
     }
+    .spinner { display:inline-block; margin:0 auto; height:42px; }
+    .lds-ring { display:inline-block; width:34px; height:34px; position:relative;}
+    .lds-ring div { box-sizing:border-box; display:block; position:absolute; width:32px; height:32px; margin:2px; border:4px solid var(--primary); border-radius:50%; animation:ldsRing 1.1s linear infinite; border-color:var(--primary) transparent transparent transparent;}
+    .lds-ring div:nth-child(1) { animation-delay:-0.41s;}
+    .lds-ring div:nth-child(2) { animation-delay:-0.28s;}
+    .lds-ring div:nth-child(3) { animation-delay:-0.14s;}
+    @keyframes ldsRing { 0% { transform:rotate(0deg);} 100%{transform:rotate(360deg);} }
+    .mobile-hint {text-align:center; font-size:.92em; color:#64748b; margin-top:12px;}
   </style>
 </head>
 <body>
   <header>
-    <!--<img src="logo-atosa.png" class="logo" alt="Atosa Logo">-->
-    <h1>Generador de Listados ATOSA</h1>
-    <div style="font-size:1rem; color:#bbf; font-weight:400;">Rápido, bonito y seguro para móvil y tablet</div>
+    <!-- Puedes añadir tu logo aquí (SVG o PNG) -->
+    <h1>Catálogo ATOSA</h1>
+    <div class="desc">Genera listados de producto de forma profesional y amigable en cualquier dispositivo</div>
   </header>
-  <div class="container">
-    <form id="formulario">
-      <label>Grupo:</label>
-      <select id="grupo"></select>
+  <main>
+    <section class="main-card">
+      <form id="formulario">
+        <label for="grupo">Grupo</label>
+        <select id="grupo"></select>
 
-      <div class="row">
-        <div>
-          <label>Idioma:</label>
-          <select id="idioma">
-            <option value="Español">Español</option>
-            <option value="Inglés">Inglés</option>
-            <option value="Francés">Francés</option>
-            <option value="Italiano">Italiano</option>
-          </select>
+        <div class="flex-row">
+          <div>
+            <label for="idioma">Idioma</label>
+            <select id="idioma">
+              <option value="Español">Español</option>
+              <option value="Inglés">Inglés</option>
+              <option value="Francés">Francés</option>
+              <option value="Italiano">Italiano</option>
+            </select>
+          </div>
+          <div>
+            <label for="descuento">Descuento (%)</label>
+            <select id="descuento">
+              <option>0</option><option>1</option><option>2</option><option>3</option>
+              <option>4</option><option>5</option><option>6</option><option>7</option><option>8</option>
+            </select>
+          </div>
         </div>
-        <div>
-          <label>Descuento (%):</label>
-          <select id="descuento">
-            <option>0</option><option>1</option><option>2</option><option>3</option>
-            <option>4</option><option>5</option><option>6</option><option>7</option><option>8</option>
-          </select>
+
+        <div class="check-row">
+          <label>Solo stock</label>
+          <label class="switch">
+            <input type="checkbox" id="soloStock"><span class="slider"></span>
+          </label>
         </div>
-      </div>
+        <div class="check-row">
+          <label>Sin imágenes</label>
+          <label class="switch">
+            <input type="checkbox" id="sinImagenes"><span class="slider"></span>
+          </label>
+        </div>
 
-      <label>Solo artículos en stock:</label>
-      <input type="checkbox" id="soloStock">
-      <label>Sin imágenes:</label>
-      <input type="checkbox" id="sinImagenes">
+        <button type="submit" id="generar">Generar Excel</button>
 
-      <div class="aviso">
-        El uso de la API es <strong>lento</strong> y puede tardar varios minutos en generar el Excel.
-      </div>
-
-      <button type="submit" id="generar">Generar Excel</button>
-
-      <div class="progreso-area">
-        <progress id="progreso" value="0" max="100"></progress>
-        <div id="estado"></div>
-      </div>
-    </form>
-  </div>
-
+        <div class="progress-cont">
+          <div id="spinner" class="spinner" style="display:none;">
+            <span class="lds-ring"><div></div><div></div><div></div><div></div></span>
+          </div>
+          <progress id="progreso" value="0" max="100"></progress>
+          <div id="estado" class="estado-txt"></div>
+        </div>
+      </form>
+      <div class="mobile-hint">Optimizado para uso en dispositivos móviles y tabletas</div>
+    </section>
+  </main>
   <script>
     const API = "https://backend-aqb5.onrender.com";
     const grupoSelect = document.getElementById("grupo");
     const estado = document.getElementById("estado");
-    // Fetch grupos
+    const spinner = document.getElementById("spinner");
+    const progreso = document.getElementById("progreso");
+    // Cargar grupos
     fetch(API + "/api/grupos")
       .then(r => r.json())
       .then(({ grupos }) => {
         grupoSelect.innerHTML = "";
         grupos.forEach(gr => {
           const op = document.createElement('option');
-          op.value = gr;
-          op.innerText = gr;
-          grupoSelect.appendChild(op);
+          op.value = gr; op.innerText = gr; grupoSelect.appendChild(op);
         });
       });
 
     document.getElementById("formulario").onsubmit = async function(e) {
       e.preventDefault();
+      setEstado("⏳ Preparando generación...");
+      spinner.style.display = "inline-block";
+      progreso.value = 0;
+      document.getElementById('generar').disabled = true;
       const grupo = document.getElementById("grupo").value;
       const descuento = parseInt(document.getElementById("descuento").value, 10);
       const idioma = document.getElementById("idioma").value;
       const soloStock = document.getElementById("soloStock").checked;
       const sinImagenes = document.getElementById("sinImagenes").checked;
-      setEstado("Iniciando generación...");
-      document.getElementById('generar').disabled = true;
       fetch(API + "/api/genera-excel-final-async", {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ grupo, descuento, idioma, soloStock, sinImagenes })
       })
       .then(r => r.json())
       .then(data => {
-        setEstado("Generando Excel...");
+        setEstado("Procesando datos del listado...");
         consultaProgreso(data.jobId);
       })
       .catch(() => {
         setEstado("Error iniciando el proceso");
+        spinner.style.display = "none";
         document.getElementById('generar').disabled = false;
       });
     };
 
-    function setEstado(txt) { estado.textContent = txt; }
+    function setEstado(txt) {
+      estado.textContent = txt;
+      spinner.style.display = (/Preparando|procesando|esperando|⏳|cargando|descargando|progreso|proceso/i.test(txt)) ? "inline-block" : "none";
+    }
 
     async function consultaProgreso(jobId) {
-      const prog = document.getElementById("progreso");
       let descargado = false;
+      const faseMensajes = [
+        "Preparando generación...",
+        "Descargando información del grupo...",
+        "Consultando promociones...",
+        "Generando filas Excel...",
+        "Añadiendo imágenes...",
+        "Finalizando archivo Excel..."
+      ];
+      let faseIndex = 0;
+      let timerFase = setInterval(() => {
+        if (!descargado) setEstado(faseMensajes[faseIndex % faseMensajes.length]);
+        faseIndex++;
+      }, 1100);
+
       let intervalo = setInterval(async () => {
         const res = await fetch(API + "/api/progreso/" + jobId);
         let data = await res.json();
-        prog.value = data.progress || 0;
-        setEstado(data.error ? "Error: " + data.error : `Progreso: ${data.progress}%`);
+        progreso.value = data.progress || 0;
+        setEstado(data.error ? "Error: " + data.error : `(${data.progress}% completado)`);
         if (data.progress >= 100 && !data.error && !descargado) {
           descargado = true;
-          clearInterval(intervalo);
+          clearInterval(intervalo); clearInterval(timerFase);
           setEstado("¡Listo para descargar!");
+          spinner.style.display = "none";
           const resp = await fetch(API + "/api/descarga-excel/" + jobId);
           const blob = await resp.blob();
           const url = URL.createObjectURL(blob);
@@ -176,7 +242,8 @@
           document.getElementById('generar').disabled = false;
         }
         if (data.error) {
-          clearInterval(intervalo);
+          clearInterval(intervalo); clearInterval(timerFase);
+          spinner.style.display = "none";
           document.getElementById('generar').disabled = false;
         }
       }, 1100);
