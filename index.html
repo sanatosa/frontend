@@ -1,99 +1,105 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Generador de Excel ATOSA</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <style>
-    body { font-family: Arial, sans-serif; background: #f9fafb; margin: 0; padding: 20px; }
-    .container { max-width: 600px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-    h1 { font-size: 1.5em; text-align: center; }
-    label { display: block; margin: 10px 0 5px; font-weight: bold; }
-    select, input, button { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 5px; }
-    button { background: #1976d2; color: #fff; font-size: 1em; cursor: pointer; }
-    button:hover { background: #155a9c; }
-  </style>
+<meta charset="UTF-8">
+<title>Generador Excel ATOSA</title>
+<style>
+  body { font-family: sans-serif; max-width: 540px; margin: 30px auto; }
+  label { font-weight: bold; }
+  .campo { margin-bottom: 10px; }
+  #progreso { width: 100%; height: 18px; }
+</style>
 </head>
 <body>
-  <div class="container">
-    <h1>Generador de Excel ATOSA</h1>
-    <form id="formulario">
-      <label for="grupo">Grupo</label>
-      <select id="grupo"><option>Cargando...</option></select>
+<h2>Generar Listado de Productos ATOSA</h2>
+<div class="campo">
+  <label>Grupo:</label>
+  <select id="grupo"></select>
+</div>
+<div class="campo">
+  <label>Descuento (%):</label>
+  <select id="descuento"><option>0</option><option>5</option><option>10</option></select>
+</div>
+<div class="campo">
+  <label>Sin imágenes</label>
+  <input type="checkbox" id="sinImagenes">
+</div>
+<div class="campo">
+  <label>Origen imágenes:</label>
+  <select id="origenFotos">
+    <option value="local">Carpeta local (RÁPIDO)</option>
+  </select>
+</div>
+<div class="campo">
+  <label>Selecciona carpeta de imágenes: </label>
+  <input type="file" id="carpeta" webkitdirectory directory multiple>
+</div>
+<button id="generar">Generar Excel</button>
+<progress id="progreso" value="0" max="100"></progress>
+<div id="estado"></div>
+<script>
+const API = "https://backend-aqb5.onrender.com";
 
-      <label for="tipoFotos">Seleccionar origen de fotos</label>
-      <select id="tipoFotos">
-        <option value="api">Obtener fotos desde la API</option>
-        <option value="local">Seleccionar carpeta de fotos locales</option>
-      </select>
+// Carga grupos
+fetch(API + "/api/grupos").then(r => r.json()).then(({ grupos }) => {
+  const g = document.getElementById("grupo");
+  grupos.forEach(gr => { g.innerHTML += `<option>${gr}</option>` });
+});
 
-      <div id="fotosLocalesDiv" style="display: none;">
-        <label for="fotosCarpeta">Seleccionar carpeta de fotos</label>
-        <input type="file" id="fotosCarpeta" webkitdirectory multiple />
-      </div>
+// Gestiona generación del Excel
+document.getElementById("generar").onclick = async function() {
+  const grupo = document.getElementById("grupo").value;
+  const descuento = parseInt(document.getElementById("descuento").value, 10);
+  const sinImagenes = document.getElementById("sinImagenes").checked;
+  const origenFotos = document.getElementById("origenFotos").value;
+  // Extrae nombres de imágenes locales seleccionadas
+  const files = Array.from(document.getElementById("carpeta").files);
+  const nombres = files.map(f => f.name.toLowerCase());
+  setEstado("Preparando...");
+  // 1. Solicita el Job y qué fotos faltan
+  const resp = await fetch(API + "/api/genera-excel-final-async", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ grupo, descuento, sinImagenes, origenFotos, fotosDisponibles: nombres })
+  });
+  const data = await resp.json();
+  if (data.requiredFotos && data.requiredFotos.length) {
+    // Sube solo faltantes
+    setEstado(`Subiendo ${data.requiredFotos.length} fotos...`);
+    let form = new FormData();
+    files.filter(f => data.requiredFotos.includes(f.name.toLowerCase())).forEach(f => form.append("fotos", f));
+    await fetch(API + "/api/subir-fotos/" + data.jobId, { method: "POST", body: form });
+  }
+  setEstado("Generando Excel...");
+  consultaProgreso(data.jobId);
+};
 
-      <button type="submit">Generar Excel</button>
-    </form>
-  </div>
+function setEstado(txt) {
+  document.getElementById("estado").textContent = txt;
+}
 
-  <script>
-    const API_URL = 'https://backend-aqb5.onrender.com';
-
-    async function cargarGrupos() {
-      const grupoSelect = document.getElementById('grupo');
-      const res = await fetch(`${API_URL}/api/grupos`);
-      const grupos = await res.json();
-      grupoSelect.innerHTML = grupos.map(g => `<option value="${g.codigo}">${g.descripcion}</option>`).join('');
+async function consultaProgreso(jobId) {
+  let prog = document.getElementById("progreso");
+  let intervalo = setInterval(async () => {
+    const res = await fetch(API + "/api/progreso/" + jobId);
+    let data = await res.json();
+    prog.value = data.progress || 0;
+    setEstado(data.error ? "Error: " + data.error : `Progreso: ${data.progress}%`);
+    if (data.progress >= 100 && !data.error) {
+      clearInterval(intervalo);
+      // Descarga el Excel
+      setEstado("¡Listo para descargar!");
+      const resp = await fetch(API + "/api/descarga-excel/" + jobId);
+      const blob = await resp.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = data.filename || "listado.xlsx";
+      a.click();
+      setEstado("Descarga completada");
     }
-
-    document.getElementById('tipoFotos').addEventListener('change', (e) => {
-      const fotosLocalesDiv = document.getElementById('fotosLocalesDiv');
-      fotosLocalesDiv.style.display = e.target.value === 'local' ? 'block' : 'none';
-    });
-
-    document.getElementById('formulario').addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      const grupo = document.getElementById('grupo').value;
-      const tipoFotos = document.getElementById('tipoFotos').value;
-      const fotosInput = document.getElementById('fotosCarpeta');
-      const fotosLocales = {};
-
-      if (tipoFotos === 'local') {
-        const fotos = Array.from(fotosInput.files);
-        for (const foto of fotos) {
-          fotosLocales[foto.name.split('.')[0]] = URL.createObjectURL(foto);
-        }
-      }
-
-      const res = await fetch(`${API_URL}/api/articulos/grupo/${grupo}`);
-      const articulos = await res.json();
-
-      const wb = XLSX.utils.book_new();
-      const wsData = [["Código", "Descripción", "Disponible", "EAN13", "Precio", "UMV", "Imagen"]];
-
-      for (const art of articulos) {
-        let imagen = "Foto no encontrada";
-
-        if (tipoFotos === 'api') {
-          const fotoRes = await fetch(`${API_URL}/api/articulos/foto/${art.codigo}`);
-          if (fotoRes.ok) {
-            imagen = await fotoRes.text();
-          }
-        } else if (tipoFotos === 'local' && fotosLocales[art.codigo]) {
-          imagen = fotosLocales[art.codigo];
-        }
-
-        wsData.push([art.codigo, art.descripcion, art.disponible, art.ean13, art.precioVenta, art.umv, imagen]);
-      }
-
-      const ws = XLSX.utils.aoa_to_sheet(wsData);
-      XLSX.utils.book_append_sheet(wb, ws, 'Listado');
-      XLSX.writeFile(wb, 'listado.xlsx');
-    });
-
-    cargarGrupos();
-  </script>
+    if (data.error) clearInterval(intervalo);
+  }, 1200);
+}
+</script>
 </body>
 </html>
