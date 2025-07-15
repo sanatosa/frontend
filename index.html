@@ -2,218 +2,146 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Generador de Listado ATOSA</title>
+  <title>Generador Excel ATOSA</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 30px; }
-    #progress-bar {
-      width: 400px; height: 32px; background: #eee;
-      border: 1px solid #bbb; margin: 20px 0; border-radius: 8px; overflow: hidden;
-      display: none;
+    body { font-family: Arial, sans-serif; margin: 2em; }
+    .progress-bar-bg {
+      width: 100%; background: #eee; border-radius: 4px; height: 30px; overflow: hidden;
+      margin-bottom: 10px;
     }
-    #progress-inner {
-      height: 100%; background: #4caf50; color: #fff; text-align: center;
-      line-height: 32px; font-weight: bold; font-size: 16px; width: 0%;
-      transition: width 0.3s;
+    .progress-bar-fg {
+      height: 100%; background: #007bff; color: #fff; text-align: center; line-height: 30px;
+      width: 0%; transition: width 0.3s;
     }
-    #progreso-texto {
-      min-height: 28px;
-    }
-    label, select, input {
-      font-size: 16px;
-    }
-    button {
-      font-size: 18px; padding: 8px 22px; margin-top: 12px;
-      border-radius: 6px; border: 1px solid #3a7; background: #4caf50; color: #fff;
-      cursor: pointer;
-    }
-    button[disabled] { opacity: 0.7; background: #bbb; cursor: not-allowed; }
-    .campo { margin-bottom: 12px; }
-    #grupo-cargando { color: #555; font-size: 15px; margin-left: 8px; }
-    #grupo-error { color: red; font-size: 15px; margin-left: 8px; }
+    .eta-info { text-align: center; margin-top: 8px; color: #333; font-size: 1.1em; }
   </style>
 </head>
 <body>
-  <h1>Generador de Listado ATOSA</h1>
+  <h1>Generador de Excel (ATOSA)</h1>
+  <form id="formulario">
+    <label>
+      Grupo:
+      <select id="grupo" name="grupo" required>
+        <option value="">Cargando...</option>
+      </select>
+    </label>
+    <br><br>
+    <label>
+      Idioma:
+      <select id="idioma" name="idioma">
+        <option value="Español">Español</option>
+        <option value="Inglés">Inglés</option>
+        <option value="Francés">Francés</option>
+        <option value="Italiano">Italiano</option>
+      </select>
+    </label>
+    <br><br>
+    <label>
+      <input type="checkbox" id="soloStock" name="soloStock">
+      Solo artículos en stock
+    </label>
+    <br><br>
+    <label>
+      <input type="checkbox" id="sinImagenes" name="sinImagenes">
+      No incluir imágenes
+    </label>
+    <br><br>
+    <label>
+      Descuento (%):
+      <input type="number" id="descuento" name="descuento" min="0" max="99" value="0">
+    </label>
+    <br><br>
+    <button type="submit" id="boton">Generar Excel</button>
+  </form>
 
-  <div class="campo">
-    <label for="grupo">Grupo:</label>
-    <select id="grupo" disabled>
-      <option>Cargando grupos...</option>
-    </select>
-    <span id="grupo-cargando"></span>
-    <span id="grupo-error"></span>
-    <small style="display:block;">(elige el nombre EXACTO del grupo, según el Excel)</small>
+  <div id="progreso-container" style="display:none; margin-top:2em;">
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fg" id="barra"></div>
+    </div>
+    <div class="eta-info" id="eta"></div>
+    <div id="mensaje"></div>
   </div>
-  <div class="campo">
-    <label for="idioma">Idioma:</label>
-    <select id="idioma">
-      <option>Español</option>
-      <option>Inglés</option>
-      <option>Francés</option>
-      <option>Italiano</option>
-    </select>
-  </div>
-  <div class="campo">
-    <label for="descuento">Descuento (%):</label>
-    <input type="number" id="descuento" value="0" min="0" max="50" style="width:60px;">
-  </div>
-  <div class="campo">
-    <label for="soloStock"><input type="checkbox" id="soloStock"> Solo artículos con stock</label>
-  </div>
-  <div class="campo">
-    <label for="maxFilas">Máx. filas:</label>
-    <input type="number" id="maxFilas" value="50" min="1" max="1000" style="width:70px;">
-  </div>
-
-  <button id="generar" onclick="generarExcel()" disabled>Generar listado</button>
-
-  <div id="progress-bar">
-    <div id="progress-inner">0%</div>
-  </div>
-  <div id="progreso-texto"></div>
 
   <script>
-    // Usa SIEMPRE el backend de Render
-    const BACKEND = 'https://backend-aqb5.onrender.com';
-
-    // Cargar grupos al arrancar
-    window.addEventListener('DOMContentLoaded', cargarGrupos);
-
-    function cargarGrupos() {
-      const grupoSelect = document.getElementById('grupo');
-      const grupoCargando = document.getElementById('grupo-cargando');
-      const grupoError = document.getElementById('grupo-error');
-      grupoCargando.textContent = 'Cargando grupos...';
-      grupoError.textContent = '';
-      fetch(BACKEND + '/api/grupos')
-        .then(async r => {
-          if (!r.ok) {
-            const txt = await r.text();
-            throw new Error(txt || "No se pudo obtener la lista de grupos.");
-          }
-          return r.json();
-        })
-        .then(data => {
-          grupoSelect.innerHTML = '';
-          if (!data.grupos || !data.grupos.length) {
-            grupoSelect.disabled = true;
-            grupoCargando.textContent = '';
-            grupoError.textContent = 'No hay grupos disponibles';
-            document.getElementById('generar').disabled = true;
-            return;
-          }
-          data.grupos.forEach(grupo => {
-            const op = document.createElement('option');
-            op.value = grupo;
-            op.textContent = grupo;
-            grupoSelect.appendChild(op);
-          });
-          grupoSelect.disabled = false;
-          grupoCargando.textContent = '';
-          grupoError.textContent = '';
-          document.getElementById('generar').disabled = false;
-        })
-        .catch(e => {
-          grupoSelect.innerHTML = '<option>Error cargando grupos</option>';
-          grupoSelect.disabled = true;
-          grupoCargando.textContent = '';
-          grupoError.textContent = 'Error: ' + e.message;
-          document.getElementById('generar').disabled = true;
+    // Rellenar select de grupos
+    fetch('/api/grupos')
+      .then(r => r.json())
+      .then(datos => {
+        const sel = document.getElementById('grupo');
+        sel.innerHTML = '<option value="">-- Elige grupo --</option>';
+        datos.grupos.forEach(g => {
+          const op = document.createElement('option');
+          op.value = g; op.textContent = g;
+          sel.appendChild(op);
         });
-    }
+      });
 
-    function generarExcel() {
-      const grupo     = document.getElementById('grupo').value.trim();
-      const idioma    = document.getElementById('idioma').value;
-      const descuento = Number(document.getElementById('descuento').value) || 0;
-      const soloStock = document.getElementById('soloStock').checked;
-      const maxFilas  = Number(document.getElementById('maxFilas').value) || 50;
+    let jobId = null;
+    let timer = null;
 
-      if (!grupo) {
-        alert("Por favor, elige el grupo.");
-        return;
-      }
+    document.getElementById('formulario').onsubmit = async function(e) {
+      e.preventDefault();
+      document.getElementById('progreso-container').style.display = '';
+      document.getElementById('mensaje').textContent = '';
+      document.getElementById('barra').style.width = '0%';
+      document.getElementById('barra').textContent = '0%';
+      document.getElementById('eta').textContent = '';
+      document.getElementById('boton').disabled = true;
 
-      document.getElementById('generar').disabled = true;
-      document.getElementById('progress-bar').style.display = 'block';
-      document.getElementById('progress-inner').style.width = '0%';
-      document.getElementById('progress-inner').innerText = '0%';
-      document.getElementById('progreso-texto').innerText = 'Iniciando...';
+      const datos = {
+        grupo: document.getElementById('grupo').value,
+        idioma: document.getElementById('idioma').value,
+        soloStock: document.getElementById('soloStock').checked,
+        descuento: parseInt(document.getElementById('descuento').value) || 0,
+        sinImagenes: document.getElementById('sinImagenes').checked
+        // maxFilas NO se envía: siempre serán 3500
+      };
 
-      fetch(BACKEND + '/api/genera-excel-final-async', {
+      const resp = await fetch('/api/genera-excel-final-async', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          grupo, idioma, descuento, soloStock, maxFilas
-        })
-      })
-      .then(async r => {
-        if (!r.ok) {
-          const txt = await r.text();
-          throw new Error('Error HTTP: ' + r.status + ' - ' + txt);
-        }
-        return r.json();
-      })
-      .then(data => {
-        if (!data.jobId) throw new Error('No se recibió jobId');
-        pollProgreso(data.jobId);
-      })
-      .catch(e => {
-        document.getElementById('progreso-texto').innerText = 'Error: ' + e.message;
-        document.getElementById('generar').disabled = false;
-        document.getElementById('progress-bar').style.display = 'none';
+        body: JSON.stringify(datos)
       });
+      const { jobId: nuevoJobId, error } = await resp.json();
+      if (error) {
+        document.getElementById('mensaje').textContent = error;
+        document.getElementById('boton').disabled = false;
+        return;
+      }
+      jobId = nuevoJobId;
+      timer = setInterval(checkProgreso, 1100);
+    };
+
+    // Formatea segundos a "X min Y s" o "X segundos"
+    function formatSeconds(s) {
+      if (s == null) return "";
+      const min = Math.floor(s / 60);
+      const sec = s % 60;
+      if (min > 0) return `${min} min ${sec} s restantes`;
+      return `${sec} segundos restantes`;
     }
 
-    function pollProgreso(jobId) {
-      fetch(BACKEND + '/api/progreso/' + jobId)
-        .then(r => r.json())
-        .then(status => {
-          if (status.error) {
-            document.getElementById('progreso-texto').innerText = 'Error: ' + status.error;
-            document.getElementById('generar').disabled = false;
-            document.getElementById('progress-bar').style.display = 'none';
-            return;
-          }
-          let pct = status.progress || 0;
-          document.getElementById('progress-inner').style.width = pct + '%';
-          document.getElementById('progress-inner').innerText = pct + '%';
-          if (pct < 100) {
-            document.getElementById('progreso-texto').innerText = 'Generando archivo, por favor espere...';
-            setTimeout(() => pollProgreso(jobId), 1000);
-          } else {
-            document.getElementById('progreso-texto').innerText = 'Descargando archivo...';
-            descargarArchivo(jobId, status.filename);
-          }
-        })
-        .catch(e => {
-          document.getElementById('progreso-texto').innerText = 'Error: ' + e.message;
-          document.getElementById('generar').disabled = false;
-          document.getElementById('progress-bar').style.display = 'none';
-        });
-    }
+    async function checkProgreso() {
+      const resp = await fetch('/api/progreso/' + jobId);
+      const datos = await resp.json();
+      const barra = document.getElementById('barra');
+      barra.style.width = datos.progress + '%';
+      barra.textContent = datos.progress + '%';
 
-    function descargarArchivo(jobId, filename) {
-      fetch(BACKEND + '/api/descarga-excel/' + jobId)
-        .then(r => r.blob())
-        .then(blob => {
-          const url = window.URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = filename || "listado.xlsx";
-          document.body.appendChild(a);
-          a.click();
-          window.URL.revokeObjectURL(url);
-          a.remove();
-          document.getElementById('progreso-texto').innerText = '¡Archivo generado!';
-          document.getElementById('generar').disabled = false;
-          document.getElementById('progress-bar').style.display = 'none';
-        })
-        .catch(e => {
-          document.getElementById('progreso-texto').innerText = 'Error al descargar: ' + e.message;
-          document.getElementById('generar').disabled = false;
-          document.getElementById('progress-bar').style.display = 'none';
-        });
+      // Mostrar ETA
+      document.getElementById('eta').textContent = formatSeconds(datos.eta);
+
+      if (datos.error) {
+        clearInterval(timer);
+        document.getElementById('mensaje').textContent = datos.error;
+        document.getElementById('boton').disabled = false;
+      } else if (datos.progress >= 100 && datos.filename) {
+        clearInterval(timer);
+        document.getElementById('mensaje').innerHTML =
+          `<a href="/api/descarga-excel/${jobId}">Descargar Excel generado: ${datos.filename}</a>`;
+        document.getElementById('boton').disabled = false;
+        document.getElementById('eta').textContent = '';
+      }
     }
   </script>
 </body>
