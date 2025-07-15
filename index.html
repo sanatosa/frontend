@@ -2,18 +2,14 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Generador Excel ATOSA</title>
+  <title>Generador Excel ATOSA (Carpeta Local o API)</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 2em; }
-    .progress-bar-bg {
-      width: 100%; background: #eee; border-radius: 4px; height: 30px; overflow: hidden;
-      margin-bottom: 10px;
-    }
-    .progress-bar-fg {
-      height: 100%; background: #007bff; color: #fff; text-align: center; line-height: 30px;
-      width: 0%; transition: width 0.3s;
-    }
+    .progress-bar-bg { width: 100%; background: #eee; border-radius: 4px; height: 30px; overflow: hidden; margin-bottom: 10px; }
+    .progress-bar-fg { height: 100%; background: #007bff; color: #fff; text-align: center; line-height: 30px; width: 0%; transition: width 0.3s; }
     .eta-info { text-align: center; margin-top: 8px; color: #333; font-size: 1.1em; }
+    .aviso-api { display: none; color: #c00; font-weight: bold; margin: 6px 0; }
+    #fotos-label { display: none; }
   </style>
 </head>
 <body>
@@ -37,19 +33,34 @@
     </label>
     <br><br>
     <label>
-      <input type="checkbox" id="soloStock" name="soloStock">
-      Solo artículos en stock
+      <input type="checkbox" id="soloStock" name="soloStock"> Solo artículos en stock
     </label>
     <br><br>
     <label>
-      <input type="checkbox" id="sinImagenes" name="sinImagenes">
-      No incluir imágenes
+      <input type="checkbox" id="sinImagenes" name="sinImagenes"> No incluir imágenes
     </label>
     <br><br>
     <label>
       Descuento (%):
       <input type="number" id="descuento" name="descuento" min="0" max="99" value="0">
     </label>
+    <br><br>
+    <label>
+      Origen de imágenes:
+      <select id="origenFotos" name="origenFotos">
+        <option value="local">Carpeta local (RÁPIDO)</option>
+        <option value="api">API de Atosa (MUY LENTO)</option>
+      </select>
+    </label>
+    <span class="aviso-api" id="aviso-api">⚠️ El uso de la API es MUY lento y puede tardar varios minutos en generar el Excel.</span>
+
+    <div id="fotos-label" style="margin-top:8px;">
+      <label>
+        Selecciona la carpeta local de imágenes:
+        <input type="file" id="carpetaFotos" webkitdirectory directory multiple>
+      </label>
+    </div>
+
     <br><br>
     <button type="submit" id="boton">Generar Excel</button>
   </form>
@@ -64,23 +75,46 @@
 
   <script>
     // Rellenar select de grupos
-    fetch('/api/grupos')
-      .then(r => r.json())
-      .then(datos => {
-        const sel = document.getElementById('grupo');
-        sel.innerHTML = '<option value="">-- Elige grupo --</option>';
-        datos.grupos.forEach(g => {
-          const op = document.createElement('option');
-          op.value = g; op.textContent = g;
-          sel.appendChild(op);
-        });
+    fetch('/api/grupos').then(r => r.json()).then(datos => {
+      const sel = document.getElementById('grupo');
+      sel.innerHTML = '<option value="">-- Elige grupo --</option>';
+      datos.grupos.forEach(g => {
+        const op = document.createElement('option');
+        op.value = g;
+        op.textContent = g;
+        sel.appendChild(op);
       });
+    });
+
+    // Mostrar aviso y input de carpeta según origen de fotos
+    document.getElementById('origenFotos').addEventListener('change', function() {
+      const api = this.value === 'api';
+      document.getElementById('aviso-api').style.display = api ? '' : 'none';
+      document.getElementById('fotos-label').style.display = !api ? '' : 'none';
+    });
+
+    // Mantener los archivos seleccionados globalmente
+    let fotosArchivos = [];
+    document.getElementById('carpetaFotos').addEventListener('change', function(e) {
+      fotosArchivos = Array.from(e.target.files);
+      if (fotosArchivos.length > 0) {
+        document.getElementById('fotos-label').style.color = "green";
+      } else {
+        document.getElementById('fotos-label').style.color = "";
+      }
+    });
 
     let jobId = null;
     let timer = null;
 
     document.getElementById('formulario').onsubmit = async function(e) {
       e.preventDefault();
+      // Validación si se selecciona "local" pero no hay fotos
+      if (document.getElementById('origenFotos').value === "local" && fotosArchivos.length === 0 && !document.getElementById('sinImagenes').checked) {
+        alert("Debes seleccionar una carpeta local de imágenes o marcar 'No incluir imágenes'.");
+        return;
+      }
+
       document.getElementById('progreso-container').style.display = '';
       document.getElementById('mensaje').textContent = '';
       document.getElementById('barra').style.width = '0%';
@@ -88,31 +122,56 @@
       document.getElementById('eta').textContent = '';
       document.getElementById('boton').disabled = true;
 
+      // Recoge los datos del formulario
       const datos = {
         grupo: document.getElementById('grupo').value,
         idioma: document.getElementById('idioma').value,
         soloStock: document.getElementById('soloStock').checked,
         descuento: parseInt(document.getElementById('descuento').value) || 0,
-        sinImagenes: document.getElementById('sinImagenes').checked
-        // maxFilas NO se envía: siempre serán 3500
+        sinImagenes: document.getElementById('sinImagenes').checked,
+        origenFotos: document.getElementById('origenFotos').value
       };
 
+      // Si es carpeta local, sube solo la lista de nombres de imágenes disponibles
+      let fotosInfo = [];
+      if (datos.origenFotos === "local" && !datos.sinImagenes) {
+        fotosInfo = fotosArchivos.map(f => f.name.toLowerCase());
+        datos.fotosDisponibles = fotosInfo; // el backend sabrá qué fotos hay
+      }
+
+      // Lanza el proceso asíncrono
       const resp = await fetch('/api/genera-excel-final-async', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(datos)
       });
-      const { jobId: nuevoJobId, error } = await resp.json();
+      const { jobId: nuevoJobId, error, requiredFotos } = await resp.json();
+
       if (error) {
         document.getElementById('mensaje').textContent = error;
         document.getElementById('boton').disabled = false;
         return;
       }
+
       jobId = nuevoJobId;
+
+      // Si el backend pide fotos locales, se las subimos
+      if (requiredFotos && requiredFotos.length > 0) {
+        // Busca los archivos requeridos en la carpeta seleccionada
+        const filesToSend = fotosArchivos.filter(f => requiredFotos.includes(f.name.toLowerCase()));
+        const formData = new FormData();
+        filesToSend.forEach(f => formData.append('fotos', f, f.name));
+        // Sube al backend
+        await fetch(`/api/subir-fotos/${jobId}`, {
+          method: 'POST',
+          body: formData
+        });
+      }
+
+      // Empieza a chequear progreso
       timer = setInterval(checkProgreso, 1100);
     };
 
-    // Formatea segundos a "X min Y s" o "X segundos"
     function formatSeconds(s) {
       if (s == null) return "";
       const min = Math.floor(s / 60);
@@ -127,10 +186,7 @@
       const barra = document.getElementById('barra');
       barra.style.width = datos.progress + '%';
       barra.textContent = datos.progress + '%';
-
-      // Mostrar ETA
       document.getElementById('eta').textContent = formatSeconds(datos.eta);
-
       if (datos.error) {
         clearInterval(timer);
         document.getElementById('mensaje').textContent = datos.error;
