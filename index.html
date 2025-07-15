@@ -2,203 +2,98 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Generador de Excel ATOSA</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; background: #f9fafb; margin: 0; padding: 0; }
-    .container { max-width: 480px; margin: 30px auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 8px #0001; padding: 24px; }
-    h1 { text-align: center; font-size: 1.5em; }
-    label { font-weight: bold; }
-    select, input[type="number"] { width: 100%; padding: 8px; margin: 4px 0 12px 0; border-radius: 5px; border: 1px solid #ddd; }
-    .row { display: flex; gap: 14px; }
-    .row > div { flex: 1; }
-    .progreso { width: 100%; background: #eee; border-radius: 6px; overflow: hidden; margin: 10px 0; }
-    .progreso-barra { height: 17px; background: #1976d2; width: 0%; transition: width 0.3s; }
-    button { background: #1976d2; color: #fff; border: none; border-radius: 5px; padding: 10px 18px; font-size: 1em; cursor: pointer; width: 100%; }
-    button:disabled { opacity: 0.6; }
-    .mini { font-size: 0.98em; color: #666; }
-    .error { color: #c00; padding: 8px 0; }
-    .success { color: #090; padding: 8px 0; }
-    .hidden { display: none; }
+    body { font-family: Arial, sans-serif; background: #f9fafb; margin: 0; padding: 20px; }
+    .container { max-width: 600px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    h1 { font-size: 1.5em; text-align: center; }
+    label { display: block; margin: 10px 0 5px; font-weight: bold; }
+    select, input, button { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 5px; }
+    button { background: #1976d2; color: #fff; font-size: 1em; cursor: pointer; }
+    button:hover { background: #155a9c; }
   </style>
 </head>
 <body>
-<div class="container">
-  <h1>Generador de Excel ATOSA</h1>
-  <form id="formulario">
-    <label>Grupo</label>
-    <select id="grupo" required><option>Cargando...</option></select>
+  <div class="container">
+    <h1>Generador de Excel ATOSA</h1>
+    <form id="formulario">
+      <label for="grupo">Grupo</label>
+      <select id="grupo"><option>Cargando...</option></select>
 
-    <div class="row">
-      <div>
-        <label>Idioma</label>
-        <select id="idioma">
-          <option>Español</option>
-          <option>Inglés</option>
-          <option>Francés</option>
-          <option>Italiano</option>
-        </select>
-      </div>
-      <div>
-        <label>Descuento (%)</label>
-        <select id="descuento">
-          <option value="0">0</option>
-          <option value="1">1</option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-          <option value="4">4</option>
-          <option value="5">5</option>
-          <option value="6">6</option>
-          <option value="7">7</option>
-          <option value="8">8</option>
-        </select>
-      </div>
-    </div>
+      <label for="idioma">Idioma</label>
+      <select id="idioma">
+        <option>Español</option>
+        <option>Inglés</option>
+        <option>Francés</option>
+        <option>Italiano</option>
+      </select>
 
-    <div class="row">
-      <div>
-        <input type="checkbox" id="soloStock">
-        <label for="soloStock" class="mini">Solo artículos en stock</label>
-      </div>
-      <div>
-        <input type="checkbox" id="sinImagenes">
-        <label for="sinImagenes" class="mini">Sin imágenes</label>
-      </div>
-    </div>
+      <label for="descuento">Descuento (%)</label>
+      <input type="number" id="descuento" value="0" min="0" max="100" />
 
-    <label>Origen de imágenes</label>
-    <select id="origenFotos">
-      <option value="local">Carpeta local (RÁPIDO)</option>
-      <option value="api">API de Atosa (MUY LENTO)</option>
-    </select>
-    <div class="mini" id="apiWarning" style="display:none;">El uso de la API es <b>MUY lento</b> y puede tardar varios minutos en generar el Excel.</div>
+      <label for="fotosCarpeta">Seleccionar carpeta de fotos</label>
+      <input type="file" id="fotosCarpeta" webkitdirectory multiple />
 
-    <div id="fotosLocal" style="display:none;">
-      <label>Carpeta local de imágenes:</label>
-      <input type="file" id="fotosInput" multiple accept=".jpg,.jpeg,.png" />
-      <div class="mini" id="faltanFotos"></div>
-    </div>
+      <button type="submit">Generar Excel</button>
+    </form>
+  </div>
 
-    <button type="submit" id="btnGenerar">Generar Excel</button>
-  </form>
-  <div class="progreso"><div class="progreso-barra" id="barra"></div></div>
-  <div id="estado"></div>
-</div>
+  <script>
+    const API_URL = 'https://backend-aqb5.onrender.com';
 
-<script>
-const API_URL = "https://backend-aqb5.onrender.com";
-const grupoSel = document.getElementById('grupo');
-const idiomaSel = document.getElementById('idioma');
-const descuentoSel = document.getElementById('descuento');
-const soloStock = document.getElementById('soloStock');
-const sinImagenes = document.getElementById('sinImagenes');
-const origenFotosSel = document.getElementById('origenFotos');
-const fotosInput = document.getElementById('fotosInput');
-const barra = document.getElementById('barra');
-const estado = document.getElementById('estado');
-const btnGenerar = document.getElementById('btnGenerar');
-const apiWarning = document.getElementById('apiWarning');
-const fotosLocalDiv = document.getElementById('fotosLocal');
-const faltanFotosDiv = document.getElementById('faltanFotos');
-
-let fotosDisponibles = [];
-
-async function cargarGrupos() {
-  try {
-    let res = await fetch(`${API_URL}/api/grupos`);
-    let data = await res.json();
-    grupoSel.innerHTML = (data.grupos||[]).map(g => `<option>${g}</option>`).join('');
-  } catch {
-    grupoSel.innerHTML = '<option>Error cargando grupos</option>';
-  }
-}
-
-grupoSel.addEventListener('change', () => faltanFotosDiv.innerHTML = '');
-origenFotosSel.addEventListener('change', actualizarOrigen);
-sinImagenes.addEventListener('change', actualizarOrigen);
-
-function actualizarOrigen() {
-  const esLocal = origenFotosSel.value === 'local' && !sinImagenes.checked;
-  fotosLocalDiv.style.display = esLocal ? '' : 'none';
-  apiWarning.style.display = origenFotosSel.value === 'api' && !sinImagenes.checked ? '' : 'none';
-}
-
-fotosInput.addEventListener('change', () => {
-  fotosDisponibles = Array.from(fotosInput.files).map(f => f.name.toLowerCase());
-  faltanFotosDiv.innerHTML = '';
-});
-
-document.getElementById('formulario').addEventListener('submit', async e => {
-  e.preventDefault();
-  barra.style.width = '3%';
-  estado.innerHTML = '';
-  btnGenerar.disabled = true;
-
-  // 1. Inicia el job
-  let body = {
-    grupo: grupoSel.value,
-    idioma: idiomaSel.value,
-    descuento: parseInt(descuentoSel.value),
-    soloStock: soloStock.checked,
-    sinImagenes: sinImagenes.checked,
-    origenFotos: origenFotosSel.value,
-    fotosDisponibles
-  };
-  let res = await fetch(`${API_URL}/api/genera-excel-final-async`, {
-    method: 'POST',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify(body)
-  });
-  let data = await res.json();
-  if (!data.jobId) {
-    estado.innerHTML = `<div class="error">${data.error || "Error generando Excel."}</div>`;
-    btnGenerar.disabled = false;
-    return;
-  }
-
-  // 2. Si requiere fotos locales, sube las que falten
-  if (data.requiredFotos && data.requiredFotos.length > 0) {
-    faltanFotosDiv.innerHTML = `Faltan ${data.requiredFotos.length} imágenes.<br>Debes seleccionarlas y volver a generar.`;
-    btnGenerar.disabled = false;
-    return;
-  }
-  if (fotosDisponibles.length && origenFotosSel.value === 'local' && !sinImagenes.checked) {
-    let formData = new FormData();
-    for (let f of fotosInput.files) formData.append('fotos', f, f.name.toLowerCase());
-    await fetch(`${API_URL}/api/subir-fotos/${data.jobId}`, { method: 'POST', body: formData });
-  }
-
-  // 3. Progreso y descarga
-  await esperarProgreso(data.jobId);
-});
-
-async function esperarProgreso(jobId) {
-  barra.style.width = '5%';
-  let interval = setInterval(async () => {
-    let res = await fetch(`${API_URL}/api/progreso/${jobId}`);
-    let data = await res.json();
-    barra.style.width = `${Math.max(data.progress, 5)}%`;
-    if (data.error) {
-      estado.innerHTML = `<div class="error">${data.error}</div>`;
-      btnGenerar.disabled = false;
-      clearInterval(interval);
+    async function cargarGrupos() {
+      const grupoSelect = document.getElementById('grupo');
+      const res = await fetch(`${API_URL}/api/grupos`);
+      const grupos = await res.json();
+      grupoSelect.innerHTML = grupos.map(g => `<option value="${g.idGrupo}">${g.descripcion}</option>`).join('');
     }
-    else if (data.progress >= 100 && data.filename) {
-      barra.style.width = '100%';
-      estado.innerHTML = '<div class="success">¡Excel generado! Descargando...</div>';
-      let blob = await (await fetch(`${API_URL}/api/descarga-excel/${jobId}`)).blob();
-      let a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = data.filename;
-      a.click();
-      btnGenerar.disabled = false;
-      clearInterval(interval);
-    }
-  }, 900);
-}
 
-cargarGrupos();
-actualizarOrigen();
-</script>
+    document.getElementById('formulario').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const grupo = document.getElementById('grupo').value;
+      const idioma = document.getElementById('idioma').value;
+      const descuento = document.getElementById('descuento').value;
+      const fotosInput = document.getElementById('fotosCarpeta');
+      const fotos = Array.from(fotosInput.files);
+
+      // Crear un mapa de fotos locales
+      const fotosLocales = {};
+      for (const foto of fotos) {
+        fotosLocales[foto.name.split('.')[0]] = URL.createObjectURL(foto);
+      }
+
+      // Obtener datos de los artículos del backend
+      const res = await fetch(`${API_URL}/api/articulos/grupo/${grupo}`);
+      const articulos = await res.json();
+
+      // Generar el Excel
+      const wb = XLSX.utils.book_new();
+      const wsData = [["Código", "Descripción", "Disponible", "EAN13", "Precio", "UMV", "Imagen"]];
+
+      for (const art of articulos) {
+        const fila = [
+          art.codigo,
+          art.descripcion,
+          art.disponible,
+          art.ean13,
+          art.precioVenta,
+          art.umv,
+          fotosLocales[art.codigo] || "Foto no encontrada"
+        ];
+        wsData.push(fila);
+      }
+
+      const ws = XLSX.utils.aoa_to_sheet(wsData);
+      XLSX.utils.book_append_sheet(wb, ws, 'Listado');
+
+      // Descargar Excel
+      XLSX.writeFile(wb, 'listado.xlsx');
+    });
+
+    cargarGrupos();
+  </script>
 </body>
 </html>
