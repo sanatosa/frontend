@@ -8,6 +8,7 @@
   label { font-weight: bold; }
   .campo { margin-bottom: 10px; }
   #progreso { width: 100%; height: 18px; }
+  .aviso { color: #b91c1c; font-weight: bold; margin-top: 10px; margin-bottom: 15px; }
 </style>
 </head>
 <body>
@@ -17,22 +18,37 @@
   <select id="grupo"></select>
 </div>
 <div class="campo">
+  <label>Idioma:</label>
+  <select id="idioma">
+    <option value="Español">Español</option>
+    <option value="Inglés">Inglés</option>
+    <option value="Francés">Francés</option>
+    <option value="Italiano">Italiano</option>
+  </select>
+</div>
+<div class="campo">
   <label>Descuento (%):</label>
-  <select id="descuento"><option>0</option><option>5</option><option>10</option></select>
+  <select id="descuento">
+    <option>0</option><option>1</option><option>2</option><option>3</option>
+    <option>4</option><option>5</option><option>6</option><option>7</option><option>8</option>
+  </select>
+</div>
+<div class="campo">
+  <label>Solo artículos en stock</label>
+  <input type="checkbox" id="soloStock">
 </div>
 <div class="campo">
   <label>Sin imágenes</label>
   <input type="checkbox" id="sinImagenes">
 </div>
 <div class="campo">
-  <label>Origen imágenes:</label>
-  <select id="origenFotos">
-    <option value="local">Carpeta local (RÁPIDO)</option>
+  <label>Origen de imágenes</label>
+  <select id="origenFotos" disabled>
+    <option value="api">API de Atosa (MUY LENTO)</option>
   </select>
 </div>
-<div class="campo">
-  <label>Selecciona carpeta de imágenes: </label>
-  <input type="file" id="carpeta" webkitdirectory directory multiple>
+<div class="aviso">
+  El uso de la API es <strong>MUY lento</strong> y puede tardar varios minutos en generar el Excel.
 </div>
 <button id="generar">Generar Excel</button>
 <progress id="progreso" value="0" max="100"></progress>
@@ -40,42 +56,31 @@
 <script>
 const API = "https://backend-aqb5.onrender.com";
 
-// Carga grupos
 fetch(API + "/api/grupos").then(r => r.json()).then(({ grupos }) => {
   const g = document.getElementById("grupo");
   grupos.forEach(gr => { g.innerHTML += `<option>${gr}</option>` });
 });
 
-// Gestiona generación del Excel
 document.getElementById("generar").onclick = async function() {
   const grupo = document.getElementById("grupo").value;
   const descuento = parseInt(document.getElementById("descuento").value, 10);
+  const idioma = document.getElementById("idioma").value;
+  const soloStock = document.getElementById("soloStock").checked;
   const sinImagenes = document.getElementById("sinImagenes").checked;
-  const origenFotos = document.getElementById("origenFotos").value;
-  // Extrae nombres de imágenes locales seleccionadas
-  const files = Array.from(document.getElementById("carpeta").files);
-  const nombres = files.map(f => f.name.toLowerCase());
-  setEstado("Preparando...");
-  // 1. Solicita el Job y qué fotos faltan
-  const resp = await fetch(API + "/api/genera-excel-final-async", {
+  setEstado("Iniciando generación...");
+  fetch(API + "/api/genera-excel-final-async", {
     method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ grupo, descuento, sinImagenes, origenFotos, fotosDisponibles: nombres })
-  });
-  const data = await resp.json();
-  if (data.requiredFotos && data.requiredFotos.length) {
-    // Sube solo faltantes
-    setEstado(`Subiendo ${data.requiredFotos.length} fotos...`);
-    let form = new FormData();
-    files.filter(f => data.requiredFotos.includes(f.name.toLowerCase())).forEach(f => form.append("fotos", f));
-    await fetch(API + "/api/subir-fotos/" + data.jobId, { method: "POST", body: form });
-  }
-  setEstado("Generando Excel...");
-  consultaProgreso(data.jobId);
+    body: JSON.stringify({ grupo, descuento, idioma, soloStock, sinImagenes, origenFotos: "api" })
+  })
+  .then(r => r.json())
+  .then(data => {
+    setEstado("Generando Excel...");
+    consultaProgreso(data.jobId);
+  })
+  .catch(() => setEstado("Error iniciando el proceso"));
 };
 
-function setEstado(txt) {
-  document.getElementById("estado").textContent = txt;
-}
+function setEstado(txt) { document.getElementById("estado").textContent = txt; }
 
 async function consultaProgreso(jobId) {
   let prog = document.getElementById("progreso");
@@ -86,7 +91,6 @@ async function consultaProgreso(jobId) {
     setEstado(data.error ? "Error: " + data.error : `Progreso: ${data.progress}%`);
     if (data.progress >= 100 && !data.error) {
       clearInterval(intervalo);
-      // Descarga el Excel
       setEstado("¡Listo para descargar!");
       const resp = await fetch(API + "/api/descarga-excel/" + jobId);
       const blob = await resp.blob();
