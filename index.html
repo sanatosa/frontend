@@ -2,75 +2,311 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Generador Excel ATOSA (Carpeta Local o API)</title>
+  <title>Generador de Excel ATOSA</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Google Fonts y Material Icons -->
+  <link href="https://fonts.googleapis.com/css?family=Montserrat:400,600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <style>
-    body { font-family: Arial, sans-serif; margin: 2em; }
-    .progress-bar-bg { width: 100%; background: #eee; border-radius: 4px; height: 30px; overflow: hidden; margin-bottom: 10px; }
-    .progress-bar-fg { height: 100%; background: #007bff; color: #fff; text-align: center; line-height: 30px; width: 0%; transition: width 0.3s; }
-    .eta-info { text-align: center; margin-top: 8px; color: #333; font-size: 1.1em; }
-    .aviso-api { display: none; color: #c00; font-weight: bold; margin: 6px 0; }
-    #fotos-label { display: none; }
+    :root {
+      --primary: #3b82f6;
+      --primary-light: #60a5fa;
+      --primary-dark: #1e40af;
+      --accent: #f59e42;
+      --danger: #ef4444;
+      --success: #22c55e;
+      --border: #e5e7eb;
+      --bg: #f9fafb;
+      --card-bg: #fff;
+      --shadow: 0 4px 24px rgba(0,0,0,0.08);
+      --radius: 16px;
+      --text: #22223b;
+      --muted: #6b7280;
+    }
+
+    body {
+      background: var(--bg);
+      font-family: 'Montserrat', Arial, sans-serif;
+      color: var(--text);
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      margin-top: 36px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--primary-dark);
+      font-size: 2.2rem;
+      text-align: center;
+    }
+
+    .card {
+      margin-top: 32px;
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 32px 28px 28px 28px;
+      max-width: 420px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+      position: relative;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 8px;
+    }
+
+    label {
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: var(--primary-dark);
+      letter-spacing: 0.5px;
+    }
+
+    select, input[type="number"], input[type="file"] {
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 7px 12px;
+      font-size: 1rem;
+      font-family: inherit;
+      background: var(--bg);
+      transition: border .2s;
+      outline: none;
+    }
+    select:focus, input[type="number"]:focus {
+      border-color: var(--primary);
+    }
+
+    .switch-group {
+      display: flex;
+      gap: 18px;
+      align-items: center;
+    }
+
+    .checkbox-custom {
+      accent-color: var(--primary);
+      width: 18px;
+      height: 18px;
+      margin-right: 8px;
+      transform: translateY(2px);
+    }
+
+    .origen-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .aviso-api {
+      color: var(--danger);
+      font-weight: 600;
+      font-size: 1.02em;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-left: 4px;
+      margin-bottom: 5px;
+      animation: fadeIn .4s;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .input-folder {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 3px;
+    }
+    .input-folder label {
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 0;
+    }
+    .input-folder input[type="file"] {
+      padding: 0;
+      border: none;
+      background: none;
+    }
+
+    button[type="submit"] {
+      background: linear-gradient(90deg, var(--primary), var(--primary-light));
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 1.15rem;
+      font-weight: 700;
+      padding: 12px 0;
+      margin-top: 8px;
+      letter-spacing: 1px;
+      cursor: pointer;
+      box-shadow: 0 2px 12px rgba(59,130,246,0.08);
+      transition: background .15s, box-shadow .15s;
+    }
+    button[type="submit"]:hover {
+      background: linear-gradient(90deg, var(--primary-dark), var(--primary));
+      box-shadow: 0 6px 18px rgba(59,130,246,0.10);
+    }
+
+    .progress-modal {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(30,32,44,0.11);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+    .progress-card {
+      background: var(--card-bg);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      padding: 32px 32px 24px 32px;
+      min-width: 320px;
+      max-width: 95vw;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+    }
+    .progress-bar-bg {
+      width: 100%; background: #e0e7ef; border-radius: 10px; height: 20px; overflow: hidden;
+    }
+    .progress-bar-fg {
+      height: 100%; background: linear-gradient(90deg, var(--primary), var(--primary-light));
+      color: #fff; text-align: center; line-height: 20px; width: 0%; transition: width 0.4s;
+      font-size: 0.95em;
+      font-weight: 600;
+      letter-spacing: 0.6px;
+      border-radius: 10px;
+    }
+    .eta-info {
+      color: var(--muted);
+      font-size: 1.06em;
+      font-weight: 500;
+      margin-top: 0;
+      margin-bottom: 1em;
+    }
+    .mensaje {
+      font-size: 1.06em;
+      color: var(--danger);
+      text-align: center;
+      margin-top: 1em;
+    }
+    .descargar-link {
+      display: inline-block;
+      color: var(--success);
+      background: #e7fbe8;
+      border-radius: 7px;
+      padding: 7px 16px;
+      font-weight: 600;
+      font-size: 1.08em;
+      margin-top: 10px;
+      text-decoration: none;
+      transition: background .15s;
+    }
+    .descargar-link:hover {
+      background: #d1fae5;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .card, .progress-card {
+        padding: 14px 5vw 16px 5vw;
+        min-width: unset;
+        max-width: 99vw;
+      }
+      h1 { font-size: 1.5rem; }
+    }
   </style>
 </head>
 <body>
-  <h1>Generador de Excel (ATOSA)</h1>
-  <form id="formulario">
-    <label>
-      Grupo:
+  <h1><span class="material-icons" style="font-size:1.2em;vertical-align:-4px;color:var(--primary);">table_view</span> Generador de Excel ATOSA</h1>
+  <form id="formulario" class="card" autocomplete="off">
+    <div class="form-group">
+      <label for="grupo"><span class="material-icons" style="font-size:1em;vertical-align:-2px;">category</span> Grupo</label>
       <select id="grupo" name="grupo" required>
         <option value="">Cargando...</option>
       </select>
-    </label>
-    <br><br>
-    <label>
-      Idioma:
+    </div>
+    <div class="form-group">
+      <label for="idioma"><span class="material-icons" style="font-size:1em;vertical-align:-2px;">language</span> Idioma</label>
       <select id="idioma" name="idioma">
         <option value="Español">Español</option>
         <option value="Inglés">Inglés</option>
         <option value="Francés">Francés</option>
         <option value="Italiano">Italiano</option>
       </select>
-    </label>
-    <br><br>
-    <label>
-      <input type="checkbox" id="soloStock" name="soloStock"> Solo artículos en stock
-    </label>
-    <br><br>
-    <label>
-      <input type="checkbox" id="sinImagenes" name="sinImagenes"> No incluir imágenes
-    </label>
-    <br><br>
-    <label>
-      Descuento (%):
-      <input type="number" id="descuento" name="descuento" min="0" max="99" value="0">
-    </label>
-    <br><br>
-    <label>
-      Origen de imágenes:
+    </div>
+    <div class="form-group switch-group">
+      <label>
+        <input type="checkbox" class="checkbox-custom" id="soloStock" name="soloStock">
+        Solo artículos en stock
+      </label>
+      <label>
+        <input type="checkbox" class="checkbox-custom" id="sinImagenes" name="sinImagenes">
+        Sin imágenes
+      </label>
+    </div>
+    <div class="form-group">
+      <label for="descuento"><span class="material-icons" style="font-size:1em;vertical-align:-2px;">local_offer</span> Descuento (%)</label>
+      <select id="descuento" name="descuento">
+        <option value="0">0</option><option value="1">1</option>
+        <option value="2">2</option><option value="3">3</option>
+        <option value="4">4</option><option value="5">5</option>
+        <option value="6">6</option><option value="7">7</option>
+        <option value="8">8</option>
+      </select>
+    </div>
+    <div class="form-group origen-group">
+      <label for="origenFotos">
+        <span class="material-icons" style="font-size:1em;vertical-align:-2px;">photo_library</span>
+        Origen de imágenes
+      </label>
       <select id="origenFotos" name="origenFotos">
         <option value="local">Carpeta local (RÁPIDO)</option>
         <option value="api">API de Atosa (MUY LENTO)</option>
       </select>
-    </label>
-    <span class="aviso-api" id="aviso-api">⚠️ El uso de la API es MUY lento y puede tardar varios minutos en generar el Excel.</span>
-
-    <div id="fotos-label" style="margin-top:8px;">
-      <label>
-        Selecciona la carpeta local de imágenes:
+      <span class="aviso-api" id="aviso-api">
+        <span class="material-icons" style="font-size:1.2em;">warning</span>
+        El uso de la API es MUY lento y puede tardar varios minutos en generar el Excel.
+      </span>
+      <div class="input-folder" id="fotos-label">
+        <label>
+          <span class="material-icons" style="font-size:1.1em;vertical-align:-3px;">folder</span>
+          Carpeta local de imágenes:
+        </label>
         <input type="file" id="carpetaFotos" webkitdirectory directory multiple>
-      </label>
+      </div>
     </div>
-
-    <br><br>
-    <button type="submit" id="boton">Generar Excel</button>
+    <button type="submit" id="boton">
+      <span class="material-icons" style="font-size:1.2em;vertical-align:-3px;">download</span>
+      Generar Excel
+    </button>
   </form>
 
-  <div id="progreso-container" style="display:none; margin-top:2em;">
-    <div class="progress-bar-bg">
-      <div class="progress-bar-fg" id="barra"></div>
+  <!-- Modal de progreso -->
+  <div id="progreso-container" class="progress-modal" style="display:none;">
+    <div class="progress-card">
+      <span class="material-icons" style="font-size:2.4em;color:var(--primary);margin-bottom:-10px;">hourglass_top</span>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fg" id="barra"></div>
+      </div>
+      <div class="eta-info" id="eta"></div>
+      <div class="mensaje" id="mensaje"></div>
     </div>
-    <div class="eta-info" id="eta"></div>
-    <div id="mensaje"></div>
   </div>
 
   <script>
@@ -87,6 +323,7 @@
     });
 
     // Mostrar aviso y input de carpeta según origen de fotos
+    document.getElementById('aviso-api').style.display = 'none';
     document.getElementById('origenFotos').addEventListener('change', function() {
       const api = this.value === 'api';
       document.getElementById('aviso-api').style.display = api ? '' : 'none';
@@ -97,11 +334,7 @@
     let fotosArchivos = [];
     document.getElementById('carpetaFotos').addEventListener('change', function(e) {
       fotosArchivos = Array.from(e.target.files);
-      if (fotosArchivos.length > 0) {
-        document.getElementById('fotos-label').style.color = "green";
-      } else {
-        document.getElementById('fotos-label').style.color = "";
-      }
+      document.getElementById('fotos-label').style.color = fotosArchivos.length > 0 ? "var(--success)" : "";
     });
 
     let jobId = null;
@@ -109,9 +342,8 @@
 
     document.getElementById('formulario').onsubmit = async function(e) {
       e.preventDefault();
-      // Validación si se selecciona "local" pero no hay fotos
       if (document.getElementById('origenFotos').value === "local" && fotosArchivos.length === 0 && !document.getElementById('sinImagenes').checked) {
-        alert("Debes seleccionar una carpeta local de imágenes o marcar 'No incluir imágenes'.");
+        alert("Debes seleccionar una carpeta local de imágenes o marcar 'Sin imágenes'.");
         return;
       }
 
@@ -122,7 +354,6 @@
       document.getElementById('eta').textContent = '';
       document.getElementById('boton').disabled = true;
 
-      // Recoge los datos del formulario
       const datos = {
         grupo: document.getElementById('grupo').value,
         idioma: document.getElementById('idioma').value,
@@ -136,10 +367,9 @@
       let fotosInfo = [];
       if (datos.origenFotos === "local" && !datos.sinImagenes) {
         fotosInfo = fotosArchivos.map(f => f.name.toLowerCase());
-        datos.fotosDisponibles = fotosInfo; // el backend sabrá qué fotos hay
+        datos.fotosDisponibles = fotosInfo;
       }
 
-      // Lanza el proceso asíncrono
       const resp = await fetch('/api/genera-excel-final-async', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -150,6 +380,7 @@
       if (error) {
         document.getElementById('mensaje').textContent = error;
         document.getElementById('boton').disabled = false;
+        document.getElementById('progreso-container').style.display = 'none';
         return;
       }
 
@@ -161,14 +392,9 @@
         const filesToSend = fotosArchivos.filter(f => requiredFotos.includes(f.name.toLowerCase()));
         const formData = new FormData();
         filesToSend.forEach(f => formData.append('fotos', f, f.name));
-        // Sube al backend
-        await fetch(`/api/subir-fotos/${jobId}`, {
-          method: 'POST',
-          body: formData
-        });
+        await fetch(`/api/subir-fotos/${jobId}`, { method: 'POST', body: formData });
       }
 
-      // Empieza a chequear progreso
       timer = setInterval(checkProgreso, 1100);
     };
 
@@ -194,7 +420,7 @@
       } else if (datos.progress >= 100 && datos.filename) {
         clearInterval(timer);
         document.getElementById('mensaje').innerHTML =
-          `<a href="/api/descarga-excel/${jobId}">Descargar Excel generado: ${datos.filename}</a>`;
+          `<a href="/api/descarga-excel/${jobId}" class="descargar-link"><span class="material-icons" style="font-size:1.15em;vertical-align:-2px;">cloud_download</span> Descargar Excel generado: ${datos.filename}</a>`;
         document.getElementById('boton').disabled = false;
         document.getElementById('eta').textContent = '';
       }
