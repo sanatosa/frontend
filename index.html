@@ -1,430 +1,223 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Generador de Excel ATOSA</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- Google Fonts y Material Icons -->
-  <link href="https://fonts.googleapis.com/css?family=Montserrat:400,600&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ATOSA - Subida de imágenes</title>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <style>
-    :root {
-      --primary: #3b82f6;
-      --primary-light: #60a5fa;
-      --primary-dark: #1e40af;
-      --accent: #f59e42;
-      --danger: #ef4444;
-      --success: #22c55e;
-      --border: #e5e7eb;
-      --bg: #f9fafb;
-      --card-bg: #fff;
-      --shadow: 0 4px 24px rgba(0,0,0,0.08);
-      --radius: 16px;
-      --text: #22223b;
-      --muted: #6b7280;
-    }
-
     body {
-      background: var(--bg);
-      font-family: 'Montserrat', Arial, sans-serif;
-      color: var(--text);
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f5f7fa;
+      color: #222;
       margin: 0;
       padding: 0;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
     }
-
-    h1 {
-      margin-top: 36px;
-      font-weight: 700;
-      letter-spacing: 2px;
-      color: var(--primary-dark);
-      font-size: 2.2rem;
-      text-align: center;
-    }
-
-    .card {
-      margin-top: 32px;
-      background: var(--card-bg);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 32px 28px 28px 28px;
+    .container {
       max-width: 420px;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 22px;
-      position: relative;
+      margin: 40px auto;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.11);
+      padding: 32px 28px 24px 28px;
     }
-
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      margin-bottom: 8px;
+    h2 {
+      margin-top: 0;
+      font-weight: 700;
+      font-size: 1.35em;
+      letter-spacing: 1px;
+      color: #19497d;
+      margin-bottom: 18px;
     }
-
     label {
+      display: block;
+      margin-bottom: 7px;
       font-weight: 600;
-      margin-bottom: 4px;
-      color: var(--primary-dark);
-      letter-spacing: 0.5px;
+      color: #19497d;
     }
-
-    select, input[type="number"], input[type="file"] {
-      border: 1.5px solid var(--border);
-      border-radius: 8px;
-      padding: 7px 12px;
-      font-size: 1rem;
-      font-family: inherit;
-      background: var(--bg);
-      transition: border .2s;
-      outline: none;
+    select, input[type="file"] {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #b4c6dd;
+      margin-bottom: 16px;
+      font-size: 1em;
+      background: #f7fafc;
+      transition: border 0.2s;
     }
-    select:focus, input[type="number"]:focus {
-      border-color: var(--primary);
-    }
-
-    .switch-group {
-      display: flex;
-      gap: 18px;
-      align-items: center;
-    }
-
-    .checkbox-custom {
-      accent-color: var(--primary);
-      width: 18px;
-      height: 18px;
-      margin-right: 8px;
-      transform: translateY(2px);
-    }
-
-    .origen-group {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .aviso-api {
-      color: var(--danger);
-      font-weight: 600;
-      font-size: 1.02em;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-left: 4px;
-      margin-bottom: 5px;
-      animation: fadeIn .4s;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-
-    .input-folder {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-top: 3px;
+    select:disabled {
+      background: #eee;
+      color: #999;
     }
     .input-folder label {
-      font-weight: 500;
-      color: var(--muted);
+      display: flex;
+      align-items: center;
+      font-weight: 600;
+      color: #19497d;
+      cursor: pointer;
       margin-bottom: 0;
     }
     .input-folder input[type="file"] {
-      padding: 0;
-      border: none;
-      background: none;
+      display: none;
     }
-
-    button[type="submit"] {
-      background: linear-gradient(90deg, var(--primary), var(--primary-light));
-      color: #fff;
-      border: none;
-      border-radius: 10px;
-      font-size: 1.15rem;
-      font-weight: 700;
-      padding: 12px 0;
-      margin-top: 8px;
-      letter-spacing: 1px;
-      cursor: pointer;
-      box-shadow: 0 2px 12px rgba(59,130,246,0.08);
-      transition: background .15s, box-shadow .15s;
+    .input-folder .material-icons {
+      margin-right: 6px;
+      font-size: 1.1em;
+      vertical-align: -3px;
     }
-    button[type="submit"]:hover {
-      background: linear-gradient(90deg, var(--primary-dark), var(--primary));
-      box-shadow: 0 6px 18px rgba(59,130,246,0.10);
-    }
-
-    .progress-modal {
-      position: fixed;
-      top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(30,32,44,0.11);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 100;
-    }
-    .progress-card {
-      background: var(--card-bg);
-      border-radius: 18px;
-      box-shadow: var(--shadow);
-      padding: 32px 32px 24px 32px;
-      min-width: 320px;
-      max-width: 95vw;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 18px;
-    }
-    .progress-bar-bg {
-      width: 100%; background: #e0e7ef; border-radius: 10px; height: 20px; overflow: hidden;
-    }
-    .progress-bar-fg {
-      height: 100%; background: linear-gradient(90deg, var(--primary), var(--primary-light));
-      color: #fff; text-align: center; line-height: 20px; width: 0%; transition: width 0.4s;
-      font-size: 0.95em;
-      font-weight: 600;
-      letter-spacing: 0.6px;
-      border-radius: 10px;
-    }
-    .eta-info {
-      color: var(--muted);
-      font-size: 1.06em;
+    #carpeta-info {
+      color: #165a35;
       font-weight: 500;
-      margin-top: 0;
-      margin-bottom: 1em;
+      font-size: 0.98em;
+      margin-top: 2px;
+      margin-bottom: 14px;
+      display: none;
     }
-    .mensaje {
-      font-size: 1.06em;
-      color: var(--danger);
-      text-align: center;
-      margin-top: 1em;
-    }
-    .descargar-link {
-      display: inline-block;
-      color: var(--success);
-      background: #e7fbe8;
-      border-radius: 7px;
-      padding: 7px 16px;
+    button {
+      background: #19497d;
+      color: #fff;
       font-weight: 600;
+      border: none;
+      border-radius: 6px;
+      padding: 12px 0;
+      width: 100%;
       font-size: 1.08em;
-      margin-top: 10px;
-      text-decoration: none;
-      transition: background .15s;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: background 0.18s;
     }
-    .descargar-link:hover {
-      background: #d1fae5;
+    button:disabled {
+      background: #b4c6dd;
+      cursor: not-allowed;
     }
-
-    /* Responsive */
-    @media (max-width: 600px) {
-      .card, .progress-card {
-        padding: 14px 5vw 16px 5vw;
-        min-width: unset;
-        max-width: 99vw;
-      }
-      h1 { font-size: 1.5rem; }
+    .msg {
+      margin-top: 16px;
+      font-size: 1em;
+      padding: 10px 14px;
+      border-radius: 6px;
+    }
+    .msg.success {
+      background: #e0f0e7;
+      color: #1b7832;
+      border: 1px solid #78d7a0;
+    }
+    .msg.error {
+      background: #ffe5e5;
+      color: #a12020;
+      border: 1px solid #f7a1a1;
     }
   </style>
 </head>
 <body>
-  <h1><span class="material-icons" style="font-size:1.2em;vertical-align:-4px;color:var(--primary);">table_view</span> Generador de Excel ATOSA</h1>
-  <form id="formulario" class="card" autocomplete="off">
-    <div class="form-group">
-      <label for="grupo"><span class="material-icons" style="font-size:1em;vertical-align:-2px;">category</span> Grupo</label>
-      <select id="grupo" name="grupo" required>
-        <option value="">Cargando...</option>
+  <div class="container">
+    <h2>Subida de imágenes ATOSA</h2>
+    <form id="formulario">
+      <label for="grupo">Grupo</label>
+      <select id="grupo" required>
+        <option selected disabled>Cargando...</option>
       </select>
-    </div>
-    <div class="form-group">
-      <label for="idioma"><span class="material-icons" style="font-size:1em;vertical-align:-2px;">language</span> Idioma</label>
-      <select id="idioma" name="idioma">
-        <option value="Español">Español</option>
-        <option value="Inglés">Inglés</option>
-        <option value="Francés">Francés</option>
-        <option value="Italiano">Italiano</option>
-      </select>
-    </div>
-    <div class="form-group switch-group">
-      <label>
-        <input type="checkbox" class="checkbox-custom" id="soloStock" name="soloStock">
-        Solo artículos en stock
-      </label>
-      <label>
-        <input type="checkbox" class="checkbox-custom" id="sinImagenes" name="sinImagenes">
-        Sin imágenes
-      </label>
-    </div>
-    <div class="form-group">
-      <label for="descuento"><span class="material-icons" style="font-size:1em;vertical-align:-2px;">local_offer</span> Descuento (%)</label>
-      <select id="descuento" name="descuento">
-        <option value="0">0</option><option value="1">1</option>
-        <option value="2">2</option><option value="3">3</option>
-        <option value="4">4</option><option value="5">5</option>
-        <option value="6">6</option><option value="7">7</option>
-        <option value="8">8</option>
-      </select>
-    </div>
-    <div class="form-group origen-group">
-      <label for="origenFotos">
-        <span class="material-icons" style="font-size:1em;vertical-align:-2px;">photo_library</span>
-        Origen de imágenes
-      </label>
-      <select id="origenFotos" name="origenFotos">
-        <option value="local">Carpeta local (RÁPIDO)</option>
-        <option value="api">API de Atosa (MUY LENTO)</option>
-      </select>
-      <span class="aviso-api" id="aviso-api">
-        <span class="material-icons" style="font-size:1.2em;">warning</span>
-        El uso de la API es MUY lento y puede tardar varios minutos en generar el Excel.
-      </span>
-      <div class="input-folder" id="fotos-label">
-        <label>
-          <span class="material-icons" style="font-size:1.1em;vertical-align:-3px;">folder</span>
-          Carpeta local de imágenes:
-        </label>
-        <input type="file" id="carpetaFotos" webkitdirectory directory multiple>
-      </div>
-    </div>
-    <button type="submit" id="boton">
-      <span class="material-icons" style="font-size:1.2em;vertical-align:-3px;">download</span>
-      Generar Excel
-    </button>
-  </form>
 
-  <!-- Modal de progreso -->
-  <div id="progreso-container" class="progress-modal" style="display:none;">
-    <div class="progress-card">
-      <span class="material-icons" style="font-size:2.4em;color:var(--primary);margin-bottom:-10px;">hourglass_top</span>
-      <div class="progress-bar-bg">
-        <div class="progress-bar-fg" id="barra"></div>
+      <div class="input-folder" id="fotos-label">
+        <label for="carpetaFotos">
+          <span class="material-icons">folder</span>
+          Elegir carpeta
+        </label>
+        <input type="file" id="carpetaFotos" webkitdirectory directory multiple />
       </div>
-      <div class="eta-info" id="eta"></div>
-      <div class="mensaje" id="mensaje"></div>
-    </div>
+      <div id="carpeta-info"></div>
+
+      <button type="submit" id="btnEnviar">Enviar imágenes</button>
+    </form>
+    <div id="mensaje" class="msg" style="display:none"></div>
   </div>
 
   <script>
-    // Rellenar select de grupos
-    fetch('/api/grupos').then(r => r.json()).then(datos => {
-      const sel = document.getElementById('grupo');
-      sel.innerHTML = '<option value="">-- Elige grupo --</option>';
-      datos.grupos.forEach(g => {
-        const op = document.createElement('option');
-        op.value = g;
-        op.textContent = g;
-        sel.appendChild(op);
-      });
-    });
+    // Cambia esta constante si tu backend cambia de URL
+    const API_BASE = 'https://backend-aqb5.onrender.com';
 
-    // Mostrar aviso y input de carpeta según origen de fotos
-    document.getElementById('aviso-api').style.display = 'none';
-    document.getElementById('origenFotos').addEventListener('change', function() {
-      const api = this.value === 'api';
-      document.getElementById('aviso-api').style.display = api ? '' : 'none';
-      document.getElementById('fotos-label').style.display = !api ? '' : 'none';
-    });
+    // Cargar grupos en el selector al iniciar
+    function cargarGrupos() {
+      fetch(API_BASE + '/api/grupos')
+        .then(r => {
+          if (!r.ok) throw new Error('Respuesta incorrecta del servidor');
+          return r.json();
+        })
+        .then(datos => {
+          const sel = document.getElementById('grupo');
+          sel.innerHTML = '<option value="">-- Elige grupo --</option>';
+          if (Array.isArray(datos.grupos)) {
+            datos.grupos.forEach(g => {
+              const op = document.createElement('option');
+              op.value = g;
+              op.textContent = g;
+              sel.appendChild(op);
+            });
+            sel.disabled = false;
+          } else {
+            sel.innerHTML = '<option value="">⚠️ No hay grupos disponibles</option>';
+            sel.disabled = true;
+          }
+        })
+        .catch(err => {
+          const sel = document.getElementById('grupo');
+          sel.innerHTML = '<option value="">⚠️ Error al cargar grupos</option>';
+          sel.disabled = true;
+          mostrarMensaje('Error al cargar los grupos. Intenta de nuevo.<br><small>' + err.message + '</small>', true);
+        });
+    }
 
-    // Mantener los archivos seleccionados globalmente
+    cargarGrupos();
+
+    // Manejo de carpeta de imágenes seleccionada
     let fotosArchivos = [];
     document.getElementById('carpetaFotos').addEventListener('change', function(e) {
       fotosArchivos = Array.from(e.target.files);
-      document.getElementById('fotos-label').style.color = fotosArchivos.length > 0 ? "var(--success)" : "";
+      const infoDiv = document.getElementById('carpeta-info');
+      if (fotosArchivos.length > 0) {
+        infoDiv.textContent = `Se han seleccionado ${fotosArchivos.length} imágenes.`;
+        infoDiv.style.display = '';
+        document.getElementById('fotos-label').style.color = "#1b7832";
+      } else {
+        infoDiv.textContent = '';
+        infoDiv.style.display = 'none';
+        document.getElementById('fotos-label').style.color = "";
+      }
     });
 
-    let jobId = null;
-    let timer = null;
+    // Mostrar mensajes bonitos
+    function mostrarMensaje(msg, esError=false) {
+      const d = document.getElementById('mensaje');
+      d.innerHTML = msg;
+      d.className = 'msg ' + (esError ? 'error' : 'success');
+      d.style.display = 'block';
+      setTimeout(() => { d.style.display = 'none'; }, 4500);
+    }
 
-    document.getElementById('formulario').onsubmit = async function(e) {
+    // Manejo del envío del formulario
+    document.getElementById('formulario').addEventListener('submit', function(e) {
       e.preventDefault();
-      if (document.getElementById('origenFotos').value === "local" && fotosArchivos.length === 0 && !document.getElementById('sinImagenes').checked) {
-        alert("Debes seleccionar una carpeta local de imágenes o marcar 'Sin imágenes'.");
+
+      // Validaciones mínimas
+      const grupo = document.getElementById('grupo').value;
+      if (!grupo) {
+        mostrarMensaje('Selecciona un grupo.', true);
+        return;
+      }
+      if (fotosArchivos.length === 0) {
+        mostrarMensaje('Selecciona una carpeta de imágenes.', true);
         return;
       }
 
-      document.getElementById('progreso-container').style.display = '';
-      document.getElementById('mensaje').textContent = '';
-      document.getElementById('barra').style.width = '0%';
-      document.getElementById('barra').textContent = '0%';
-      document.getElementById('eta').textContent = '';
-      document.getElementById('boton').disabled = true;
+      // Aquí puedes hacer el envío a tu endpoint de backend si quieres
+      // Por ejemplo:
+      // const formData = new FormData();
+      // formData.append('grupo', grupo);
+      // fotosArchivos.forEach(file => formData.append('imagenes', file));
+      // fetch(API_BASE + '/api/tu-endpoint', { method: 'POST', body: formData })
+      //   .then(...)
 
-      const datos = {
-        grupo: document.getElementById('grupo').value,
-        idioma: document.getElementById('idioma').value,
-        soloStock: document.getElementById('soloStock').checked,
-        descuento: parseInt(document.getElementById('descuento').value) || 0,
-        sinImagenes: document.getElementById('sinImagenes').checked,
-        origenFotos: document.getElementById('origenFotos').value
-      };
-
-      // Si es carpeta local, sube solo la lista de nombres de imágenes disponibles
-      let fotosInfo = [];
-      if (datos.origenFotos === "local" && !datos.sinImagenes) {
-        fotosInfo = fotosArchivos.map(f => f.name.toLowerCase());
-        datos.fotosDisponibles = fotosInfo;
-      }
-
-      const resp = await fetch('/api/genera-excel-final-async', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(datos)
-      });
-      const { jobId: nuevoJobId, error, requiredFotos } = await resp.json();
-
-      if (error) {
-        document.getElementById('mensaje').textContent = error;
-        document.getElementById('boton').disabled = false;
-        document.getElementById('progreso-container').style.display = 'none';
-        return;
-      }
-
-      jobId = nuevoJobId;
-
-      // Si el backend pide fotos locales, se las subimos
-      if (requiredFotos && requiredFotos.length > 0) {
-        // Busca los archivos requeridos en la carpeta seleccionada
-        const filesToSend = fotosArchivos.filter(f => requiredFotos.includes(f.name.toLowerCase()));
-        const formData = new FormData();
-        filesToSend.forEach(f => formData.append('fotos', f, f.name));
-        await fetch(`/api/subir-fotos/${jobId}`, { method: 'POST', body: formData });
-      }
-
-      timer = setInterval(checkProgreso, 1100);
-    };
-
-    function formatSeconds(s) {
-      if (s == null) return "";
-      const min = Math.floor(s / 60);
-      const sec = s % 60;
-      if (min > 0) return `${min} min ${sec} s restantes`;
-      return `${sec} segundos restantes`;
-    }
-
-    async function checkProgreso() {
-      const resp = await fetch('/api/progreso/' + jobId);
-      const datos = await resp.json();
-      const barra = document.getElementById('barra');
-      barra.style.width = datos.progress + '%';
-      barra.textContent = datos.progress + '%';
-      document.getElementById('eta').textContent = formatSeconds(datos.eta);
-      if (datos.error) {
-        clearInterval(timer);
-        document.getElementById('mensaje').textContent = datos.error;
-        document.getElementById('boton').disabled = false;
-      } else if (datos.progress >= 100 && datos.filename) {
-        clearInterval(timer);
-        document.getElementById('mensaje').innerHTML =
-          `<a href="/api/descarga-excel/${jobId}" class="descargar-link"><span class="material-icons" style="font-size:1.15em;vertical-align:-2px;">cloud_download</span> Descargar Excel generado: ${datos.filename}</a>`;
-        document.getElementById('boton').disabled = false;
-        document.getElementById('eta').textContent = '';
-      }
-    }
+      mostrarMensaje('¡Formulario listo para enviar! (Aquí puedes implementar el envío real a la API)', false);
+    });
   </script>
 </body>
 </html>
