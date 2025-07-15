@@ -1,109 +1,186 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>Generador Excel ATOSA</title>
-<style>
-  body { font-family: sans-serif; max-width: 540px; margin: 30px auto; }
-  label { font-weight: bold; }
-  .campo { margin-bottom: 10px; }
-  #progreso { width: 100%; height: 18px; }
-  .aviso { color: #b91c1c; font-weight: bold; margin-top: 10px; margin-bottom: 15px; }
-</style>
+  <meta charset="UTF-8">
+  <title>Listado ATOSA</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    :root {
+      --color-primario: #7c3aed;
+      --color-header: #faf5ff;
+      --color-btn: #a78bfa;
+      --color-btn-hover: #7c3aed;
+      --color-card: #fff;
+      --color-txt: #222;
+      --color-fondo: #f4f2fa;
+    }
+    html, body { height: 100%; margin: 0; font-family: 'Segoe UI', Arial, sans-serif; background: var(--color-fondo);}
+    body { width: 100vw; min-height: 100vh; margin: 0; }
+    header {
+      background: var(--color-primario); color: white; padding: 18px 0 13px 0; text-align: center;
+      box-shadow: 0 2px 12px #0002;
+      position: sticky; top: 0; z-index: 10;
+    }
+    h1 { margin: 0 0 7px 0; font-size: 2.1rem; font-weight: 700; }
+    .logo { height: 46px; margin-bottom: 9px; }
+    .container {
+      max-width: 500px; margin: 32px auto 32px auto; background: var(--color-card); border-radius: 18px; box-shadow: 0 3px 20px #0001;
+      padding: 30px 15px 18px 15px;
+    }
+    @media (max-width: 650px) {
+      .container { margin: 13px 4vw 13vw 4vw; box-shadow: none;}
+      h1 { font-size: 1.54rem;}
+    }
+    form label { font-weight: 600; margin-bottom: 2px; font-size: 1.07rem; }
+    form select, form input[type="checkbox"] {
+      font-size: 1.1rem; padding: 10px; margin: 7px 0 22px 0; width: 100%; border-radius: 9px; border: 1px solid #ddd;
+      box-sizing: border-box;
+    }
+    form .row { display: flex; gap: 12px; }
+    form .row > div { flex: 1; }
+    button {
+      background: var(--color-btn); color: white; font-weight: 700; border: none; border-radius: 12px; padding: 17px 0;
+      width: 100%; font-size: 1.2rem; cursor: pointer; transition: background .15s;
+      box-shadow: 0 2px 6px #aaa2;
+    }
+    button:hover, button:focus { background: var(--color-btn-hover);}
+    .progreso-area {
+      margin: 22px 0 17px 0;
+      text-align: center;
+    }
+    progress {
+      width: 95%; height: 18px; border-radius: 10px;
+      margin-bottom:7px; margin-top: 9px;
+      accent-color: var(--color-primario);
+      background: #eee;
+    }
+    .aviso { color: #b91c1c; font-weight: bold; margin-top: 10px; margin-bottom: 15px; text-align:center; }
+    #estado { font-weight: 500; color: #444; margin-top: 8px; min-height: 22px; }
+    @media (max-width:400px) {
+      .container { padding: 7vw 2vw 5vw 2vw; }
+      button { font-size: 1.04rem;}
+    }
+  </style>
 </head>
 <body>
-<h2>Generar Listado de Productos ATOSA</h2>
-<div class="campo">
-  <label>Grupo:</label>
-  <select id="grupo"></select>
-</div>
-<div class="campo">
-  <label>Idioma:</label>
-  <select id="idioma">
-    <option value="Español">Español</option>
-    <option value="Inglés">Inglés</option>
-    <option value="Francés">Francés</option>
-    <option value="Italiano">Italiano</option>
-  </select>
-</div>
-<div class="campo">
-  <label>Descuento (%):</label>
-  <select id="descuento">
-    <option>0</option><option>1</option><option>2</option><option>3</option>
-    <option>4</option><option>5</option><option>6</option><option>7</option><option>8</option>
-  </select>
-</div>
-<div class="campo">
-  <label>Solo artículos en stock</label>
-  <input type="checkbox" id="soloStock">
-</div>
-<div class="campo">
-  <label>Sin imágenes</label>
-  <input type="checkbox" id="sinImagenes">
-</div>
-<div class="campo">
-  <label>Origen de imágenes</label>
-  <select id="origenFotos" disabled>
-    <option value="api">API de Atosa (MUY LENTO)</option>
-  </select>
-</div>
-<div class="aviso">
-  El uso de la API es <strong>MUY lento</strong> y puede tardar varios minutos en generar el Excel.
-</div>
-<button id="generar">Generar Excel</button>
-<progress id="progreso" value="0" max="100"></progress>
-<div id="estado"></div>
-<script>
-const API = "https://backend-aqb5.onrender.com";
+  <header>
+    <!--<img src="logo-atosa.png" class="logo" alt="Atosa Logo">-->
+    <h1>Generador de Listados ATOSA</h1>
+    <div style="font-size:1rem; color:#bbf; font-weight:400;">Rápido, bonito y seguro para móvil y tablet</div>
+  </header>
+  <div class="container">
+    <form id="formulario">
+      <label>Grupo:</label>
+      <select id="grupo"></select>
 
-fetch(API + "/api/grupos").then(r => r.json()).then(({ grupos }) => {
-  const g = document.getElementById("grupo");
-  grupos.forEach(gr => { g.innerHTML += `<option>${gr}</option>` });
-});
+      <div class="row">
+        <div>
+          <label>Idioma:</label>
+          <select id="idioma">
+            <option value="Español">Español</option>
+            <option value="Inglés">Inglés</option>
+            <option value="Francés">Francés</option>
+            <option value="Italiano">Italiano</option>
+          </select>
+        </div>
+        <div>
+          <label>Descuento (%):</label>
+          <select id="descuento">
+            <option>0</option><option>1</option><option>2</option><option>3</option>
+            <option>4</option><option>5</option><option>6</option><option>7</option><option>8</option>
+          </select>
+        </div>
+      </div>
 
-document.getElementById("generar").onclick = async function() {
-  const grupo = document.getElementById("grupo").value;
-  const descuento = parseInt(document.getElementById("descuento").value, 10);
-  const idioma = document.getElementById("idioma").value;
-  const soloStock = document.getElementById("soloStock").checked;
-  const sinImagenes = document.getElementById("sinImagenes").checked;
-  setEstado("Iniciando generación...");
-  fetch(API + "/api/genera-excel-final-async", {
-    method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ grupo, descuento, idioma, soloStock, sinImagenes, origenFotos: "api" })
-  })
-  .then(r => r.json())
-  .then(data => {
-    setEstado("Generando Excel...");
-    consultaProgreso(data.jobId);
-  })
-  .catch(() => setEstado("Error iniciando el proceso"));
-};
+      <label>Solo artículos en stock:</label>
+      <input type="checkbox" id="soloStock">
+      <label>Sin imágenes:</label>
+      <input type="checkbox" id="sinImagenes">
 
-function setEstado(txt) { document.getElementById("estado").textContent = txt; }
+      <div class="aviso">
+        El uso de la API es <strong>lento</strong> y puede tardar varios minutos en generar el Excel.
+      </div>
 
-async function consultaProgreso(jobId) {
-  let prog = document.getElementById("progreso");
-  let intervalo = setInterval(async () => {
-    const res = await fetch(API + "/api/progreso/" + jobId);
-    let data = await res.json();
-    prog.value = data.progress || 0;
-    setEstado(data.error ? "Error: " + data.error : `Progreso: ${data.progress}%`);
-    if (data.progress >= 100 && !data.error) {
-      clearInterval(intervalo);
-      setEstado("¡Listo para descargar!");
-      const resp = await fetch(API + "/api/descarga-excel/" + jobId);
-      const blob = await resp.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = data.filename || "listado.xlsx";
-      a.click();
-      setEstado("Descarga completada");
+      <button type="submit" id="generar">Generar Excel</button>
+
+      <div class="progreso-area">
+        <progress id="progreso" value="0" max="100"></progress>
+        <div id="estado"></div>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    const API = "https://backend-aqb5.onrender.com";
+    const grupoSelect = document.getElementById("grupo");
+    const estado = document.getElementById("estado");
+    // Fetch grupos
+    fetch(API + "/api/grupos")
+      .then(r => r.json())
+      .then(({ grupos }) => {
+        grupoSelect.innerHTML = "";
+        grupos.forEach(gr => {
+          const op = document.createElement('option');
+          op.value = gr;
+          op.innerText = gr;
+          grupoSelect.appendChild(op);
+        });
+      });
+
+    document.getElementById("formulario").onsubmit = async function(e) {
+      e.preventDefault();
+      const grupo = document.getElementById("grupo").value;
+      const descuento = parseInt(document.getElementById("descuento").value, 10);
+      const idioma = document.getElementById("idioma").value;
+      const soloStock = document.getElementById("soloStock").checked;
+      const sinImagenes = document.getElementById("sinImagenes").checked;
+      setEstado("Iniciando generación...");
+      document.getElementById('generar').disabled = true;
+      fetch(API + "/api/genera-excel-final-async", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ grupo, descuento, idioma, soloStock, sinImagenes })
+      })
+      .then(r => r.json())
+      .then(data => {
+        setEstado("Generando Excel...");
+        consultaProgreso(data.jobId);
+      })
+      .catch(() => {
+        setEstado("Error iniciando el proceso");
+        document.getElementById('generar').disabled = false;
+      });
+    };
+
+    function setEstado(txt) { estado.textContent = txt; }
+
+    async function consultaProgreso(jobId) {
+      const prog = document.getElementById("progreso");
+      let descargado = false;
+      let intervalo = setInterval(async () => {
+        const res = await fetch(API + "/api/progreso/" + jobId);
+        let data = await res.json();
+        prog.value = data.progress || 0;
+        setEstado(data.error ? "Error: " + data.error : `Progreso: ${data.progress}%`);
+        if (data.progress >= 100 && !data.error && !descargado) {
+          descargado = true;
+          clearInterval(intervalo);
+          setEstado("¡Listo para descargar!");
+          const resp = await fetch(API + "/api/descarga-excel/" + jobId);
+          const blob = await resp.blob();
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = data.filename || "listado.xlsx";
+          a.click();
+          setEstado("Descarga completada");
+          document.getElementById('generar').disabled = false;
+        }
+        if (data.error) {
+          clearInterval(intervalo);
+          document.getElementById('generar').disabled = false;
+        }
+      }, 1100);
     }
-    if (data.error) clearInterval(intervalo);
-  }, 1200);
-}
-</script>
+  </script>
 </body>
 </html>
