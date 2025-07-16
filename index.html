@@ -1,252 +1,246 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Catálogo ATOSA</title>
+  <meta charset="UTF-8" />
+  <title>Generador de Excel - ATOSA</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --primary: #5b21b6;
-      --primary-light: #ede9fe;
-      --accent: #f1f5f9;
-      --btn: #6d28d9;
-      --btn-hover: #7c3aed;
-      --error: #dc2626;
-      --success: #22c55e;
-    }
 
+  <style>
     body {
-      font-family: 'Inter', Arial, sans-serif;
-      background: var(--accent);
-      margin: 0; padding: 0;
-      min-height: 100vh;
-      display: flex; flex-direction: column; align-items: center;
+      background: #f9f9fb;
+      margin: 0;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      color: #1e293b;
     }
 
     header {
-      width: 100%; background: white;
-      box-shadow: 0 2px 8px #0001; padding: 24px 0 14px 0;
-      text-align: center; position: sticky; top: 0; z-index: 99;
+      background: #7c3aed;
+      color: white;
+      padding: 20px 0 14px;
+      text-align: center;
+      box-shadow: 0 2px 6px #0001;
     }
 
-    h1 {
-      color: var(--primary); font-weight: 700; font-size: 2.1rem; margin: 0 0 7px 0;
-      letter-spacing: 1px;
+    header h1 {
+      font-size: 1.8rem;
+      margin: 0;
+      font-weight: 700;
+      letter-spacing: 0.4px;
     }
-    .desc { color: #78716c; font-size: 1.12rem; }
 
-    .main-card {
-      background: #fff; border-radius: 24px;
-      margin: 34px 0 32px 0; box-shadow: 0 3px 30px #27083810;
-      max-width: 480px; width: 98vw; padding: 38px 4vw 22px 4vw;
+    main {
+      max-width: 600px;
+      margin: 30px auto;
+      background: white;
+      padding: 24px 24px 32px;
+      border-radius: 16px;
+      box-shadow: 0 6px 20px #00000010;
     }
-    @media (max-width: 650px) { .main-card { margin: 14px 0 12vw 0; } }
-    form { display: flex; flex-direction: column; gap: 14px;}
-    label { display: block; color: var(--primary); font-weight: 600; letter-spacing: 0.2px; margin-bottom: 2px;}
+
+    label {
+      display: block;
+      margin: 14px 0 5px;
+      font-weight: 600;
+      font-size: 0.96rem;
+      color: #334155;
+    }
+
     select, input[type="checkbox"] {
-      width: 100%; font-size: 1.04rem; padding: 11px 12px;
-      border-radius: 11px; border: 1.5px solid var(--primary-light); margin-top: 2px;
-      font-family: inherit; appearance: none; outline: none;
-      background: #f6f6fb;
-      transition: box-shadow .15s;
+      width: 100%;
+      padding: 10px;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: 1.5px solid #cbd5e1;
+      background: #f8fafc;
     }
-    select:focus { border-color: var(--primary); box-shadow: 0 0 0 2px #c7d2fe60;}
-    /* Row for idioma+descuento (moderno grid) */
-    .flex-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px;}
-    .check-row { display: flex; align-items: center; gap:10px; }
-    .check-row label { margin: 0; font-weight: 400; color:#6366f1; }
-    .switch {
-      position: relative; display: inline-block; width: 42px; height: 24px;
+
+    .checkbox {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 12px;
     }
-    .switch input { opacity: 0; width: 0; height: 0;}
-    .slider {
-      position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-      background: #e5e7eb; border-radius:24px; transition:.2s;
-    }
-    .slider:before {
-      position: absolute; content: ""; left: 4px; top: 4px; width: 16px; height: 16px;
-      background: var(--primary); border-radius: 50%; transition: 0.2s;}
-    .switch input:checked + .slider { background: #d1fae5;}
-    .switch input:checked + .slider:before { transform: translateX(18px);}
+
     button {
-      width: 100%; background: var(--btn); color: #fff; border: none;
-      font-size: 1.18rem; border-radius: 13px; font-weight: 700;
-      padding: 16px 0; margin-top: 18px; letter-spacing: .4px;
-      box-shadow: 0 4px 14px #8b5cf622; cursor: pointer;
-      transition: background .17s;
+      padding: 15px;
+      margin-top: 24px;
+      width: 100%;
+      font-size: 1.1rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 10px;
+      background: #8b5cf6;
+      color: white;
+      cursor: pointer;
+      transition: background 0.2s;
     }
-    button:disabled { background: #e0e7ef; color: #bbb; cursor: not-allowed;}
-    button:hover, button:focus { background: var(--btn-hover);}
-    .progress-cont { margin-top:28px; }
+
+    button:hover {
+      background: #7c3aed;
+    }
+
+    .progreso {
+      margin-top: 25px;
+      text-align: center;
+    }
+
     progress {
-      width: 100%; height: 19px; border-radius: 10px; background: #e0e7ef;
-      accent-color: var(--primary);
-      appearance: none; /* Edge fallback */
+      width: 100%;
+      height: 16px;
+      border-radius: 10px;
+      accent-color: #7c3aed;
     }
-    .estado-txt {
-      margin: 12px 0 0 0; min-height: 26px; color: var(--primary); font-size: 1.08rem; font-weight: 600;
-      text-align:center; transition:.12s;
+
+    .estado {
+      margin-top: 8px;
+      font-weight: 600;
+      color: #475569;
     }
-    .spinner { display:inline-block; margin:0 auto; height:42px; }
-    .lds-ring { display:inline-block; width:34px; height:34px; position:relative;}
-    .lds-ring div { box-sizing:border-box; display:block; position:absolute; width:32px; height:32px; margin:2px; border:4px solid var(--primary); border-radius:50%; animation:ldsRing 1.1s linear infinite; border-color:var(--primary) transparent transparent transparent;}
-    .lds-ring div:nth-child(1) { animation-delay:-0.41s;}
-    .lds-ring div:nth-child(2) { animation-delay:-0.28s;}
-    .lds-ring div:nth-child(3) { animation-delay:-0.14s;}
-    @keyframes ldsRing { 0% { transform:rotate(0deg);} 100%{transform:rotate(360deg);} }
-    .mobile-hint {text-align:center; font-size:.92em; color:#64748b; margin-top:12px;}
+
+    .mensaje-espera {
+      margin-top: 12px;
+      background: #fef9c3;
+      border-left: 5px solid #facc15;
+      padding: 10px 14px;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      color: #92400e;
+    }
+
+    @media (max-width: 600px) {
+      main {
+        margin: 20px 10px;
+        padding: 20px 16px;
+      }
+    }
   </style>
 </head>
+
 <body>
   <header>
-    <!-- Puedes añadir tu logo aquí (SVG o PNG) -->
-    <h1>Catálogo ATOSA</h1>
-    <div class="desc">Genera listados de producto de forma profesional y amigable en cualquier dispositivo</div>
+    <h1>Generador de Excel · ATOSA</h1>
   </header>
+
   <main>
-    <section class="main-card">
-      <form id="formulario">
-        <label for="grupo">Grupo</label>
-        <select id="grupo"></select>
+    <form id="formulario">
+      <label for="grupo">Grupo:</label>
+      <select id="grupo"></select>
 
-        <div class="flex-row">
-          <div>
-            <label for="idioma">Idioma</label>
-            <select id="idioma">
-              <option value="Español">Español</option>
-              <option value="Inglés">Inglés</option>
-              <option value="Francés">Francés</option>
-              <option value="Italiano">Italiano</option>
-            </select>
-          </div>
-          <div>
-            <label for="descuento">Descuento (%)</label>
-            <select id="descuento">
-              <option>0</option><option>1</option><option>2</option><option>3</option>
-              <option>4</option><option>5</option><option>6</option><option>7</option><option>8</option>
-            </select>
-          </div>
-        </div>
+      <label for="idioma">Idioma:</label>
+      <select id="idioma">
+        <option value="Español">Español</option>
+        <option value="Inglés">Inglés</option>
+        <option value="Francés">Francés</option>
+        <option value="Italiano">Italiano</option>
+      </select>
 
-        <div class="check-row">
-          <label>Solo stock</label>
-          <label class="switch">
-            <input type="checkbox" id="soloStock"><span class="slider"></span>
-          </label>
-        </div>
-        <div class="check-row">
-          <label>Sin imágenes</label>
-          <label class="switch">
-            <input type="checkbox" id="sinImagenes"><span class="slider"></span>
-          </label>
-        </div>
+      <label for="descuento">Descuento (%):</label>
+      <select id="descuento">
+        <option>0</option><option>1</option><option>2</option>
+        <option>3</option><option>4</option><option>5</option>
+        <option>6</option><option>7</option><option>8</option>
+      </select>
 
-        <button type="submit" id="generar">Generar Excel</button>
+      <div class="checkbox">
+        <input type="checkbox" id="soloStock">
+        <label for="soloStock">Solo artículos en stock</label>
+      </div>
 
-        <div class="progress-cont">
-          <div id="spinner" class="spinner" style="display:none;">
-            <span class="lds-ring"><div></div><div></div><div></div><div></div></span>
-          </div>
-          <progress id="progreso" value="0" max="100"></progress>
-          <div id="estado" class="estado-txt"></div>
-        </div>
-      </form>
-      <div class="mobile-hint">Optimizado para uso en dispositivos móviles y tabletas</div>
-    </section>
+      <div class="checkbox">
+        <input type="checkbox" id="sinImagenes">
+        <label for="sinImagenes">Sin imágenes</label>
+      </div>
+
+      <div class="mensaje-espera" id="mensaje-espera" style="display:none;">
+        ⏳ El Excel se está generando.<br>
+        Por favor, <strong>no cierres esta ventana</strong> mientras se completa el proceso.<br>
+        Esto puede tardar varios minutos si hay muchas imágenes.
+      </div>
+
+      <button type="submit" id="generar">Generar Excel</button>
+
+      <div class="progreso">
+        <progress id="progreso" value="0" max="100"></progress>
+        <div class="estado" id="estado"></div>
+      </div>
+    </form>
   </main>
+
   <script>
-    const API = "https://backend-aqb5.onrender.com";
+    const API = "https://backend-aqb5.onrender.com"; // <- Ajusta si usas servidor local
     const grupoSelect = document.getElementById("grupo");
     const estado = document.getElementById("estado");
-    const spinner = document.getElementById("spinner");
     const progreso = document.getElementById("progreso");
-    // Cargar grupos
+    const mensaje = document.getElementById("mensaje-espera");
+
     fetch(API + "/api/grupos")
       .then(r => r.json())
       .then(({ grupos }) => {
-        grupoSelect.innerHTML = "";
         grupos.forEach(gr => {
-          const op = document.createElement('option');
-          op.value = gr; op.innerText = gr; grupoSelect.appendChild(op);
+          const op = document.createElement("option");
+          op.value = gr;
+          op.textContent = gr;
+          grupoSelect.appendChild(op);
         });
       });
 
     document.getElementById("formulario").onsubmit = async function(e) {
       e.preventDefault();
-      setEstado("⏳ Preparando generación...");
-      spinner.style.display = "inline-block";
+      mensaje.style.display = "block";
       progreso.value = 0;
-      document.getElementById('generar').disabled = true;
+      estado.textContent = "⏳ Iniciando generación...";
+      document.getElementById("generar").disabled = true;
+
       const grupo = document.getElementById("grupo").value;
-      const descuento = parseInt(document.getElementById("descuento").value, 10);
       const idioma = document.getElementById("idioma").value;
+      const descuento = parseInt(document.getElementById("descuento").value, 10);
       const soloStock = document.getElementById("soloStock").checked;
       const sinImagenes = document.getElementById("sinImagenes").checked;
-      fetch(API + "/api/genera-excel-final-async", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ grupo, descuento, idioma, soloStock, sinImagenes })
-      })
-      .then(r => r.json())
-      .then(data => {
-        setEstado("Procesando datos del listado...");
-        consultaProgreso(data.jobId);
-      })
-      .catch(() => {
-        setEstado("Error iniciando el proceso");
-        spinner.style.display = "none";
-        document.getElementById('generar').disabled = false;
-      });
-    };
 
-    function setEstado(txt) {
-      estado.textContent = txt;
-      spinner.style.display = (/Preparando|procesando|esperando|⏳|cargando|descargando|progreso|proceso/i.test(txt)) ? "inline-block" : "none";
-    }
+      const res = await fetch(API + "/api/genera-excel-final-async", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ grupo, idioma, descuento, soloStock, sinImagenes })
+      });
+
+      const { jobId } = await res.json();
+      consultaProgreso(jobId);
+    };
 
     async function consultaProgreso(jobId) {
       let descargado = false;
-      const faseMensajes = [
-        "Preparando generación...",
-        "Descargando información del grupo...",
-        "Consultando promociones...",
-        "Generando filas Excel...",
-        "Añadiendo imágenes...",
-        "Finalizando archivo Excel..."
-      ];
-      let faseIndex = 0;
-      let timerFase = setInterval(() => {
-        if (!descargado) setEstado(faseMensajes[faseIndex % faseMensajes.length]);
-        faseIndex++;
-      }, 1100);
-
-      let intervalo = setInterval(async () => {
+      const intervalo = setInterval(async () => {
         const res = await fetch(API + "/api/progreso/" + jobId);
-        let data = await res.json();
+        const data = await res.json();
         progreso.value = data.progress || 0;
-        setEstado(data.error ? "Error: " + data.error : `(${data.progress}% completado)`);
-        if (data.progress >= 100 && !data.error && !descargado) {
+
+        if (data.error) {
+          estado.textContent = "❌ Error: " + data.error;
+          clearInterval(intervalo);
+          document.getElementById("generar").disabled = false;
+          mensaje.style.display = "none";
+          return;
+        }
+
+        if (data.progress >= 100 && !descargado) {
           descargado = true;
-          clearInterval(intervalo); clearInterval(timerFase);
-          setEstado("¡Listo para descargar!");
-          spinner.style.display = "none";
-          const resp = await fetch(API + "/api/descarga-excel/" + jobId);
-          const blob = await resp.blob();
+          estado.textContent = "✅ Excel generado. Descargando...";
+          clearInterval(intervalo);
+          const res = await fetch(API + "/api/descarga-excel/" + jobId);
+          const blob = await res.blob();
           const url = URL.createObjectURL(blob);
           const a = document.createElement("a");
           a.href = url;
           a.download = data.filename || "listado.xlsx";
           a.click();
-          setEstado("Descarga completada");
-          document.getElementById('generar').disabled = false;
+          estado.textContent = "✅ Excel descargado con éxito.";
+          mensaje.style.display = "none";
+          document.getElementById("generar").disabled = false;
+        } else {
+          estado.textContent = `🛠️ ${data.fase || "Generando"} — ${data.progress}%` +
+            (data.eta != null ? ` — ETA: ${data.eta} s` : "");
         }
-        if (data.error) {
-          clearInterval(intervalo); clearInterval(timerFase);
-          spinner.style.display = "none";
-          document.getElementById('generar').disabled = false;
-        }
-      }, 1100);
+      }, 1200);
     }
   </script>
 </body>
