@@ -12,170 +12,184 @@
       font-family: 'Segoe UI', Arial, sans-serif;
       color: #1e293b;
     }
-
     header {
       background: #7c3aed;
       color: white;
-      padding: 20px 0 14px;
+      padding: 24px 0 13px;
       text-align: center;
-      box-shadow: 0 2px 6px #0001;
+      box-shadow: 0 1px 6px #0001;
     }
-
     header h1 {
-      font-size: 1.8rem;
+      font-size: 2.1rem;
       margin: 0;
       font-weight: 700;
-      letter-spacing: 0.4px;
+      letter-spacing: .8px;
     }
 
-    main {
-      max-width: 600px;
-      margin: 30px auto;
-      background: white;
-      padding: 24px 24px 32px;
-      border-radius: 16px;
-      box-shadow: 0 6px 20px #00000010;
+    .card {
+      max-width: 450px;
+      margin: 34px auto 40px;
+      background: #fff;
+      border-radius: 22px;
+      box-shadow: 0 4px 26px #8b5cf61a;
+      padding: 35px 20px 28px 20px;
     }
 
+    .form-row { margin-bottom: 8px;}
     label {
       display: block;
-      margin: 14px 0 5px;
       font-weight: 600;
-      font-size: 0.96rem;
-      color: #334155;
+      margin: 7px 0 2px 2px;
+      color: #47417b;
     }
-
-    select, input[type="checkbox"] {
+    select,
+    .field {
       width: 100%;
-      padding: 10px;
-      font-size: 1rem;
+      font-size: 1.09rem;
+      padding: 11px 10px;
       border-radius: 8px;
-      border: 1.5px solid #cbd5e1;
-      background: #f8fafc;
+      border: 1.4px solid #b7b7d7;
+      background: #f6f6fb;
+      margin-bottom: 2px;
+      box-sizing: border-box;
+      font-family: inherit;
+      outline: none;
     }
-
-    .checkbox {
+    select:focus, .field:focus { border-color: #a78bfa; background: #f3e8ff;}
+    .checks {
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      gap: 8px;
-      margin-top: 12px;
+      margin: 10px 0 17px 0;
+      gap: 18px;
+    }
+    .checks label {
+      color: #7c3aed;
+      font-weight: 600;
+      margin: 0 0 0 5px;
+      font-size: 1.01rem;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .checks input[type=checkbox] {
+      width: 19px; height: 19px;
+      accent-color: #a78bfa;
+      margin-left: 0; margin-right: 4px;
+      vertical-align: middle;
     }
 
-    button {
-      padding: 15px;
-      margin-top: 24px;
+    .progreso-area {
+      margin-top: 23px;
       width: 100%;
-      font-size: 1.1rem;
-      font-weight: 700;
-      border: none;
-      border-radius: 10px;
-      background: #8b5cf6;
-      color: white;
-      cursor: pointer;
-      transition: background 0.2s;
     }
-
-    button:hover {
-      background: #7c3aed;
-    }
-
-    .progreso {
-      margin-top: 25px;
-      text-align: center;
-    }
-
     progress {
       width: 100%;
-      height: 16px;
+      height: 18px;
       border-radius: 10px;
       accent-color: #7c3aed;
+      margin-bottom: 4px;
+      background: #f3f3fa;
+      box-shadow: 0 0 0 1px #f1ebfa;
     }
-
     .estado {
-      margin-top: 8px;
+      text-align: center;
+      font-size: 1.08rem;
       font-weight: 600;
-      color: #475569;
+      color: #7c3aed;
+      min-height: 20px;
+      margin-top: 6px;
     }
 
     .mensaje-espera {
-      margin-top: 12px;
+      margin: 10px 0 16px 0;
       background: #fef9c3;
-      border-left: 5px solid #facc15;
-      padding: 10px 14px;
+      border-left: 6px solid #facc15;
+      padding: 13px 14px;
       border-radius: 6px;
-      font-size: 0.95rem;
-      color: #92400e;
+      font-size: 1.045rem;
+      color: #713f12;
+      box-shadow: 0 1px 3px #0001
     }
+    button {
+      padding: 15px;
+      margin-top: 19px;
+      width: 100%;
+      font-size: 1.12rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 10px;
+      background: #a78bfa;
+      color: white;
+      cursor: pointer;
+      transition: background .2s;
+      box-shadow: 0 2px 12px #bda7fa1b;
+      letter-spacing: .2px;
+    }
+    button:active, button:hover { background: #7c3aed;}
+    button:disabled { background: #d1c4e9; color: #b6b6e4; }
 
     @media (max-width: 600px) {
-      main {
-        margin: 20px 10px;
-        padding: 20px 16px;
-      }
+      .card { margin: 17px 5vw 30px 5vw; }
+      header h1 { font-size: 1.2rem;}
+      label { font-size: .98em;}
+      .mensaje-espera { font-size: .98em;}
     }
+
   </style>
 </head>
-
 <body>
   <header>
     <h1>Generador de Excel · ATOSA</h1>
   </header>
-
-  <main>
+  <div class="card">
     <form id="formulario">
-      <label for="grupo">Grupo:</label>
-      <select id="grupo"></select>
-
-      <label for="idioma">Idioma:</label>
-      <select id="idioma">
-        <option value="Español">Español</option>
-        <option value="Inglés">Inglés</option>
-        <option value="Francés">Francés</option>
-        <option value="Italiano">Italiano</option>
-      </select>
-
-      <label for="descuento">Descuento (%):</label>
-      <select id="descuento">
-        <option>0</option><option>1</option><option>2</option>
-        <option>3</option><option>4</option><option>5</option>
-        <option>6</option><option>7</option><option>8</option>
-      </select>
-
-      <div class="checkbox">
-        <input type="checkbox" id="soloStock">
-        <label for="soloStock">Solo artículos en stock</label>
+      <div class="form-row">
+        <label for="grupo">Grupo:</label>
+        <select id="grupo"></select>
       </div>
-
-      <div class="checkbox">
-        <input type="checkbox" id="sinImagenes">
-        <label for="sinImagenes">Sin imágenes</label>
+      <div class="form-row">
+        <label for="idioma">Idioma:</label>
+        <select id="idioma">
+          <option value="Español">Español</option>
+          <option value="Inglés">Inglés</option>
+          <option value="Francés">Francés</option>
+          <option value="Italiano">Italiano</option>
+        </select>
       </div>
-
+      <div class="form-row">
+        <label for="descuento">Descuento (%):</label>
+        <select id="descuento">
+          <option>0</option><option>1</option><option>2</option>
+          <option>3</option><option>4</option><option>5</option>
+          <option>6</option><option>7</option><option>8</option>
+        </select>
+      </div>
+      <div class="checks">
+        <label><input type="checkbox" id="soloStock"> Solo en stock</label>
+        <label><input type="checkbox" id="sinImagenes"> Sin imágenes</label>
+      </div>
       <div class="mensaje-espera" id="mensaje-espera" style="display:none;">
-        ⏳ El Excel se está generando.<br>
-        Por favor, <strong>no cierres esta ventana</strong> mientras se completa el proceso.<br>
+        <b>⏳ Excel en proceso…</b><br>
+        Por favor, <u>no cierres esta ventana</u> mientras se completa.<br>
         Esto puede tardar varios minutos si hay muchas imágenes.
       </div>
-
       <button type="submit" id="generar">Generar Excel</button>
-
-      <div class="progreso">
+      <div class="progreso-area">
         <progress id="progreso" value="0" max="100"></progress>
         <div class="estado" id="estado"></div>
       </div>
     </form>
-  </main>
-
+  </div>
   <script>
-    const API = "https://backend-aqb5.onrender.com"; // <- Ajusta si usas servidor local
+    const API = "https://backend-aqb5.onrender.com";
     const grupoSelect = document.getElementById("grupo");
     const estado = document.getElementById("estado");
     const progreso = document.getElementById("progreso");
     const mensaje = document.getElementById("mensaje-espera");
-
     fetch(API + "/api/grupos")
       .then(r => r.json())
       .then(({ grupos }) => {
+        grupoSelect.innerHTML = "";
         grupos.forEach(gr => {
           const op = document.createElement("option");
           op.value = gr;
@@ -183,37 +197,31 @@
           grupoSelect.appendChild(op);
         });
       });
-
     document.getElementById("formulario").onsubmit = async function(e) {
       e.preventDefault();
       mensaje.style.display = "block";
       progreso.value = 0;
-      estado.textContent = "⏳ Iniciando generación...";
+      estado.textContent = "⏳ Iniciando...";
       document.getElementById("generar").disabled = true;
-
       const grupo = document.getElementById("grupo").value;
       const idioma = document.getElementById("idioma").value;
       const descuento = parseInt(document.getElementById("descuento").value, 10);
       const soloStock = document.getElementById("soloStock").checked;
       const sinImagenes = document.getElementById("sinImagenes").checked;
-
       const res = await fetch(API + "/api/genera-excel-final-async", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ grupo, idioma, descuento, soloStock, sinImagenes })
       });
-
       const { jobId } = await res.json();
       consultaProgreso(jobId);
     };
-
     async function consultaProgreso(jobId) {
       let descargado = false;
       const intervalo = setInterval(async () => {
         const res = await fetch(API + "/api/progreso/" + jobId);
         const data = await res.json();
         progreso.value = data.progress || 0;
-
         if (data.error) {
           estado.textContent = "❌ Error: " + data.error;
           clearInterval(intervalo);
@@ -221,7 +229,6 @@
           mensaje.style.display = "none";
           return;
         }
-
         if (data.progress >= 100 && !descargado) {
           descargado = true;
           estado.textContent = "✅ Excel generado. Descargando...";
@@ -237,8 +244,8 @@
           mensaje.style.display = "none";
           document.getElementById("generar").disabled = false;
         } else {
-          estado.textContent = `🛠️ ${data.fase || "Generando"} — ${data.progress}%` +
-            (data.eta != null ? ` — ETA: ${data.eta} s` : "");
+          estado.textContent = `🛠️ ${data.fase || "Generando"} — ${data.progress}%`
+            + (data.eta != null ? ` — ETA: ${data.eta} s` : "");
         }
       }, 1200);
     }
