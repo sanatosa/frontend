@@ -110,23 +110,13 @@
       color: #713f12;
       box-shadow: 0 1px 3px #0001
     }
-    button {
-      padding: 15px;
-      margin-top: 19px;
-      width: 100%;
-      font-size: 1.12rem;
-      font-weight: 700;
-      border: none;
-      border-radius: 10px;
-      background: #a78bfa;
-      color: white;
-      cursor: pointer;
-      transition: background .2s;
-      box-shadow: 0 2px 12px #bda7fa1b;
-      letter-spacing: .2px;
+
+    /* Mensaje de carga de grupos */
+    #grupo-cargando {
+      margin-bottom:10px; 
+      font-style:italic; 
+      color:#7c3aed;
     }
-    button:active, button:hover { background: #7c3aed;}
-    button:disabled { background: #d1c4e9; color: #b6b6e4; }
 
     @media (max-width: 600px) {
       .card { margin: 17px 5vw 30px 5vw; }
@@ -143,9 +133,9 @@
   </header>
   <div class="card">
     <form id="formulario">
+      <div id="grupo-cargando">Cargando grupos, espere...</div>
       <div class="form-row">
-        <label for="grupo">Grupo:</label>
-        <select id="grupo"></select>
+        <select id="grupo" style="display:none;"></select>
       </div>
       <div class="form-row">
         <label for="idioma">Idioma:</label>
@@ -183,9 +173,14 @@
   <script>
     const API = "https://backend-aqb5.onrender.com";
     const grupoSelect = document.getElementById("grupo");
+    const grupoCargando = document.getElementById("grupo-cargando");
     const estado = document.getElementById("estado");
     const progreso = document.getElementById("progreso");
     const mensaje = document.getElementById("mensaje-espera");
+
+    grupoCargando.style.display = "block";
+    grupoSelect.style.display = "none";
+
     fetch(API + "/api/grupos")
       .then(r => r.json())
       .then(({ grupos }) => {
@@ -196,7 +191,13 @@
           op.textContent = gr;
           grupoSelect.appendChild(op);
         });
+        grupoCargando.style.display = "none";
+        grupoSelect.style.display = "block";
+      })
+      .catch(() => {
+        grupoCargando.textContent = "No se pudieron cargar los grupos. Intente otra vez más tarde.";
       });
+
     document.getElementById("formulario").onsubmit = async function(e) {
       e.preventDefault();
       mensaje.style.display = "block";
