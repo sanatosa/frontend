@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Gestión ATOSA Admin</title>
+  <title>Panel Admin ATOSA</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
     body { font-family: 'Segoe UI',Arial,sans-serif; background: #f5f3ff; margin: 0; }
@@ -45,11 +45,11 @@
     <div id="adminPanel" class="form-section hidden">
       <label for="gruposFile" class="inputfile" id="labelGrupos">Arrastra <b>grupos.xlsx</b> aquí o haz clic</label>
       <input id="gruposFile" type="file" accept=".xlsx" class="hidden">
-      <button class="btn" id="uploadGruposBtn" disabled>Subir grupos.xlsx</button>
+      <button class="btn" id="uploadGruposBtn" disabled style="margin-bottom:12px;">Subir grupos.xlsx</button>
       <label for="ordenFile" class="inputfile" id="labelOrden">Arrastra <b>orden.xlsx</b> aquí o haz clic</label>
       <input id="ordenFile" type="file" accept=".xlsx" class="hidden">
-      <button class="btn" id="uploadOrdenBtn" disabled>Subir orden.xlsx</button>
-      <button class="btn" style="background:#5e318b;margin-top:36px;" id="logoutBtn">Cerrar sesión</button>
+      <button class="btn" id="uploadOrdenBtn" disabled style="margin-bottom:16px;">Subir orden.xlsx</button>
+      <button class="btn" style="background:#5e318b;" id="logoutBtn">Cerrar sesión</button>
     </div>
     <div style="text-align:center;color:#bbb;font-size:13px;margin-top:35px">ATOSA Admin &copy; 2025</div>
   </div>
@@ -80,7 +80,7 @@ document.getElementById('loginBtn').onclick = async function() {
     const resp = await fetch(`${API_BASE}/admin/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      credentials: 'include', // <<== ENVIAR COOKIES
+      credentials: 'include',
       body: JSON.stringify({ password: pwd })
     });
     const data = await resp.json();
@@ -108,7 +108,6 @@ window.addEventListener('DOMContentLoaded', async () => {
     showLoginForm();
   }
 });
-
 document.getElementById('logoutBtn').onclick = async function() {
   await fetch(`${API_BASE}/admin/logout`, {
     method: 'POST',
@@ -135,7 +134,7 @@ uploadGruposBtn.onclick = async function() {
     const resp = await fetch(`${API_BASE}/admin/upload-grupos`, {
       method: 'POST',
       body: formData,
-      credentials: 'include' // ENVIAR COOKIES
+      credentials: 'include'
     });
     const data = await resp.json();
     if (data.success) {
@@ -155,7 +154,7 @@ const ordenFile = document.getElementById('ordenFile');
 const uploadOrdenBtn = document.getElementById('uploadOrdenBtn');
 document.getElementById('labelOrden').onclick = () => ordenFile.click();
 ordenFile.addEventListener('change', () => {
-  uploadOrdenBtn.disabled = !ordenFile.files[0];
+  uploadOrdenBtn.disabled = !!ordenFile.files[0];
   document.getElementById('labelOrden').textContent =
     ordenFile.files[0] ? `Seleccionado: ${ordenFile.files[0].name}` : 'Arrastra el archivo orden.xlsx aquí o haz clic para seleccionar';
 });
