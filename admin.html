@@ -1,552 +1,200 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Administración - ATOSA</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-            line-height: 1.6;
-        }
-
-        .container {
-            max-width: 500px;
-            margin: 0 auto;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            animation: slideUp 0.6s ease-out;
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .logo {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, #dc2626, #ef4444);
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 15px;
-            box-shadow: 0 10px 20px rgba(220, 38, 38, 0.3);
-        }
-
-        .logo i {
-            color: white;
-            font-size: 24px;
-        }
-
-        h1 {
-            color: #1a202c;
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
-
-        .subtitle {
-            color: #64748b;
-            font-size: 14px;
-            font-weight: 400;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: #374151;
-            font-size: 14px;
-        }
-
-        .form-group label i {
-            margin-right: 8px;
-            color: #dc2626;
-            width: 16px;
-        }
-
-        input[type="password"], input[type="file"] {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            font-size: 16px;
-            background: white;
-            transition: all 0.3s ease;
-        }
-
-        input[type="password"]:focus, input[type="file"]:focus {
-            outline: none;
-            border-color: #dc2626;
-            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
-        }
-
-        .btn {
-            width: 100%;
-            padding: 16px;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #dc2626, #ef4444);
-            color: white;
-            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(220, 38, 38, 0.6);
-        }
-
-        .btn-success {
-            background: linear-gradient(135deg, #059669, #10b981);
-            color: white;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
-        }
-
-        .btn-success:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6);
-        }
-
-        .btn:disabled {
-            background: #94a3b8;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        .login-form {
-            display: block;
-        }
-
-        .admin-panel {
-            display: none;
-        }
-
-        .file-upload {
-            border: 2px dashed #e2e8f0;
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-            transition: all 0.3s ease;
-            margin-bottom: 20px;
-        }
-
-        .file-upload:hover {
-            border-color: #dc2626;
-            background: rgba(220, 38, 38, 0.05);
-        }
-
-        .file-upload.dragover {
-            border-color: #dc2626;
-            background: rgba(220, 38, 38, 0.1);
-        }
-
-        .file-info {
-            background: #f8fafc;
-            padding: 12px;
-            border-radius: 8px;
-            margin-top: 8px;
-            font-size: 13px;
-            color: #64748b;
-            border-left: 3px solid #dc2626;
-        }
-
-        .message {
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-size: 14px;
-        }
-
-        .message.success {
-            background: #dcfce7;
-            color: #166534;
-            border: 1px solid #bbf7d0;
-        }
-
-        .message.error {
-            background: #fee2e2;
-            color: #dc2626;
-            border: 1px solid #fecaca;
-        }
-
-        .logout-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: none;
-            border: none;
-            color: #64748b;
-            cursor: pointer;
-            font-size: 18px;
-            padding: 8px;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-        }
-
-        .logout-btn:hover {
-            background: rgba(220, 38, 38, 0.1);
-            color: #dc2626;
-        }
-
-        @media (max-width: 768px) {
-            body {
-                padding: 10px;
-            }
-
-            .container {
-                padding: 20px;
-                margin: 10px auto;
-            }
-
-            h1 {
-                font-size: 22px;
-            }
-
-            .btn {
-                padding: 18px;
-                font-size: 18px;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Gestión de archivos del sistema</title>
+  <style>
+    body { font-family: Segoe UI, Arial, sans-serif; background: #f5f3ff; margin: 0; padding: 0; }
+    .container { max-width: 430px; margin: 40px auto; padding: 24px; background: #fff; border-radius: 16px; box-shadow: 0 4px 30px rgba(124, 58, 237, .18); }
+    h2 { color: #6e38ce; text-align: center; margin-bottom: 16px; }
+    .form-section { margin-bottom: 36px; }
+    .inputfile {
+      width: 100%; min-height: 68px; border: 2px dashed #7c3aed; border-radius: 10px;
+      color: #5e5e5e; background: #f8f8fc; text-align: center; padding: 18px; cursor: pointer; font-size: 16px;
+      transition: border-color .25s;
+    }
+    .inputfile:focus { border: 2px solid #5334ab; }
+    .hidden { display: none; }
+    .btn { margin: 8px 0; padding: 10px 22px; border: none; background: #7c3aed; color: #fff; border-radius: 7px; font-size: 18px;
+      box-shadow: 1px 1px 18px rgba(124, 58, 237, .12); cursor: pointer; transition: background 0.12s;
+    }
+    .btn[disabled] { background: #aaa; cursor: wait; }
+    .status-message {
+      margin-bottom: 18px; text-align: center; padding: 8px 0;
+      border-radius: 8px; font-size: 16px;
+    }
+    .status-message.success { background: #e9faf2; border: 1px solid #35b677; color: #2d7c57; }
+    .status-message.error { background: #fff4f4; border: 1px solid #e04f4f; color: #b70000; }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <button class="logout-btn" id="logoutBtn" style="display: none;">
-            <i class="fas fa-sign-out-alt"></i>
-        </button>
+  <div class="container">
+    <h2>Gestión de archivos del sistema</h2>
+    <div id="statusMsg" class="status-message hidden"></div>
 
-        <div class="header">
-            <div class="logo">
-                <i class="fas fa-shield-alt"></i>
-            </div>
-            <h1>Panel de Administración</h1>
-            <p class="subtitle">Gestión de archivos del sistema</p>
-        </div>
-
-        <div id="loginForm" class="login-form">
-            <div class="form-group">
-                <label for="password">
-                    <i class="fas fa-lock"></i>
-                    Contraseña de Administrador
-                </label>
-                <input type="password" id="password" placeholder="Ingresa la contraseña">
-            </div>
-            <button class="btn btn-primary" id="loginBtn">
-                <i class="fas fa-sign-in-alt"></i>
-                Iniciar Sesión
-            </button>
-        </div>
-
-        <div id="adminPanel" class="admin-panel">
-            <div id="message"></div>
-
-            <div class="form-group">
-                <label>
-                    <i class="fas fa-layer-group"></i>
-                    Actualizar Archivo de Grupos
-                </label>
-                <div class="file-upload" id="gruposUpload">
-                    <i class="fas fa-cloud-upload-alt" style="font-size: 24px; color: #dc2626; margin-bottom: 10px;"></i>
-                    <p>Arrastra el archivo grupos.xlsx aquí o haz clic para seleccionar</p>
-                    <input type="file" id="gruposFile" accept=".xlsx" style="display: none;">
-                </div>
-                <div class="file-info">
-                    <strong>Estructura requerida:</strong> Columnas "grupo" y "codigo"
-                </div>
-                <button class="btn btn-success" id="uploadGruposBtn" disabled>
-                    <i class="fas fa-upload"></i>
-                    Subir Grupos.xlsx
-                </button>
-            </div>
-
-            <div class="form-group">
-                <label>
-                    <i class="fas fa-sort-numeric-down"></i>
-                    Actualizar Archivo de Orden
-                </label>
-                <div class="file-upload" id="ordenUpload">
-                    <i class="fas fa-cloud-upload-alt" style="font-size: 24px; color: #dc2626; margin-bottom: 10px;"></i>
-                    <p>Arrastra el archivo orden.xlsx aquí o haz clic para seleccionar</p>
-                    <input type="file" id="ordenFile" accept=".xlsx" style="display: none;">
-                </div>
-                <div class="file-info">
-                    <strong>Estructura requerida:</strong> Primera columna "orden", segunda columna "codigo"
-                </div>
-                <button class="btn btn-success" id="uploadOrdenBtn" disabled>
-                    <i class="fas fa-upload"></i>
-                    Subir Orden.xlsx
-                </button>
-            </div>
-        </div>
+    <div id="loginForm" class="form-section">
+      <input type="password" placeholder="Contraseña de administrador" id="adminPwd" style="width:90%;padding:10px;margin-bottom:12px;border-radius:8px;border:1px solid #cdcdcd;font-size:17px;">
+      <button class="btn" id="loginBtn">Iniciar sesión</button>
     </div>
 
-    <script>
-        const API_BASE = 'https://backend-aqb5.onrender.com';
-        
-        // Elementos del DOM
-        const loginForm = document.getElementById('loginForm');
-        const adminPanel = document.getElementById('adminPanel');
-        const passwordInput = document.getElementById('password');
-        const loginBtn = document.getElementById('loginBtn');
-        const logoutBtn = document.getElementById('logoutBtn');
-        const messageDiv = document.getElementById('message');
-        
-        // Elementos de archivos
-        const gruposUpload = document.getElementById('gruposUpload');
-        const gruposFile = document.getElementById('gruposFile');
-        const uploadGruposBtn = document.getElementById('uploadGruposBtn');
-        const ordenUpload = document.getElementById('ordenUpload');
-        const ordenFile = document.getElementById('ordenFile');
-        const uploadOrdenBtn = document.getElementById('uploadOrdenBtn');
+    <div id="adminPanel" class="form-section hidden">
+      <div>
+        <label for="gruposFile" class="inputfile" id="labelGrupos">Arrastra el archivo <b>grupos.xlsx</b> aquí o haz clic para seleccionar</label>
+        <input id="gruposFile" type="file" accept=".xlsx" class="hidden">
+        <button class="btn" id="uploadGruposBtn" disabled>Subir grupos.xlsx</button>
+      </div>
+      <div style="margin-top:15px;">
+        <label for="ordenFile" class="inputfile" id="labelOrden">Arrastra el archivo <b>orden.xlsx</b> aquí o haz clic para seleccionar</label>
+        <input id="ordenFile" type="file" accept=".xlsx" class="hidden">
+        <button class="btn" id="uploadOrdenBtn" disabled>Subir orden.xlsx</button>
+      </div>
+      <button class="btn" style="background:#5e318b;margin-top:36px;" id="logoutBtn">Cerrar sesión</button>
+    </div>
+    <div style="text-align:center;color:#bbb;font-size:13px;margin-top:35px">ATOSA &middot; Admin &copy; 2025</div>
+  </div>
 
-        // Verificar estado de autenticación al cargar
-        checkAuthStatus();
+  <script>
+    // CONFIGURA TU URL DEL BACKEND:
+    const API_BASE = 'https://backend-aqb5.onrender.com';
+    // -------- CÓDIGO JS CORREGIDO --------
 
-        // Event listeners
-        loginBtn.addEventListener('click', login);
-        logoutBtn.addEventListener('click', logout);
-        passwordInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') login();
+    // Utilidades simples
+    function showMessage(msg, type = 'success') {
+      const el = document.getElementById('statusMsg');
+      el.textContent = msg;
+      el.className = `status-message ${type}`;
+      el.classList.remove('hidden');
+      setTimeout(() => el.classList.add('hidden'), 6200);
+    }
+    function showLoginForm() {
+      document.getElementById('loginForm').classList.remove('hidden');
+      document.getElementById('adminPanel').classList.add('hidden');
+    }
+    function showAdminPanel() {
+      document.getElementById('loginForm').classList.add('hidden');
+      document.getElementById('adminPanel').classList.remove('hidden');
+    }
+
+    // Login
+    document.getElementById('loginBtn').onclick = async function() {
+      const pwd = document.getElementById('adminPwd').value;
+      if (!pwd) { showMessage('Pon la contraseña', 'error'); return; }
+      this.disabled = true;
+      try {
+        const resp = await fetch(`${API_BASE}/admin/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include', // <<== ENVÍA COOKIES!
+          body: JSON.stringify({ password: pwd })
         });
-
-        // Configurar drag & drop para grupos
-        setupFileUpload(gruposUpload, gruposFile, uploadGruposBtn, uploadGrupos);
-        
-        // Configurar drag & drop para orden
-        setupFileUpload(ordenUpload, ordenFile, uploadOrdenBtn, uploadOrden);
-
-        function setupFileUpload(uploadArea, fileInput, uploadBtn, uploadFunction) {
-            uploadArea.addEventListener('click', () => fileInput.click());
-            uploadArea.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                uploadArea.classList.add('dragover');
-            });
-            uploadArea.addEventListener('dragleave', () => {
-                uploadArea.classList.remove('dragover');
-            });
-            uploadArea.addEventListener('drop', (e) => {
-                e.preventDefault();
-                uploadArea.classList.remove('dragover');
-                const files = e.dataTransfer.files;
-                if (files.length > 0) {
-                    fileInput.files = files;
-                    handleFileSelect(fileInput, uploadBtn);
-                }
-            });
-
-            fileInput.addEventListener('change', () => {
-                handleFileSelect(fileInput, uploadBtn);
-            });
-
-            uploadBtn.addEventListener('click', uploadFunction);
+        const data = await resp.json();
+        if (data.success) {
+          showAdminPanel();
+          showMessage('Acceso concedido', 'success');
+        } else {
+          showMessage(data.message || 'Contraseña incorrecta', 'error');
         }
+      } catch (err) {
+        showMessage('Error de red en login', 'error');
+      }
+      this.disabled = false;
+    };
 
-        function handleFileSelect(fileInput, uploadBtn) {
-            if (fileInput.files.length > 0) {
-                const file = fileInput.files[0];
-                if (file.name.endsWith('.xlsx')) {
-                    uploadBtn.disabled = false;
-                    uploadBtn.innerHTML = `<i class="fas fa-upload"></i> Subir ${file.name}`;
-                } else {
-                    showMessage('Solo se permiten archivos .xlsx', 'error');
-                    uploadBtn.disabled = true;
-                }
-            }
+    // Estado autenticación al entrar
+    window.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const resp = await fetch(`${API_BASE}/admin/status`, {
+          credentials: 'include'
+        });
+        const data = await resp.json();
+        if (data.isAdmin) showAdminPanel();
+        else showLoginForm();
+      } catch {
+        showLoginForm();
+      }
+    });
+
+    // Logout
+    document.getElementById('logoutBtn').onclick = async function() {
+      await fetch(`${API_BASE}/admin/logout`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+      showLoginForm();
+      showMessage('Sesión cerrada', 'success');
+    };
+
+    // Subida de grupos.xlsx
+    const gruposFile = document.getElementById('gruposFile');
+    const uploadGruposBtn = document.getElementById('uploadGruposBtn');
+    document.getElementById('labelGrupos').onclick = () => gruposFile.click();
+
+    gruposFile.addEventListener('change', () => {
+      uploadGruposBtn.disabled = !gruposFile.files[0];
+      document.getElementById('labelGrupos').textContent =
+        gruposFile.files[0] ? `Seleccionado: ${gruposFile.files[0].name}` : 'Arrastra el archivo grupos.xlsx aquí o haz clic para seleccionar';
+    });
+
+    uploadGruposBtn.onclick = async function() {
+      if (!gruposFile.files[0]) return;
+      this.disabled = true;
+      const formData = new FormData();
+      formData.append('archivo', gruposFile.files[0]);
+      try {
+        const resp = await fetch(`${API_BASE}/admin/upload-grupos`, {
+          method: 'POST',
+          body: formData,
+          credentials: 'include'    // <<== ENVÍA COOKIES!
+        });
+        const data = await resp.json();
+        if (data.success) {
+          showMessage(`Archivo subido: ${data.registros} registros procesados.`, 'success');
+          gruposFile.value = '';
+          document.getElementById('labelGrupos').textContent = 'Arrastra el archivo grupos.xlsx aquí o haz clic para seleccionar';
+        } else {
+          showMessage(data.error || 'Error en la subida', 'error');
         }
+      } catch {
+        showMessage('Error de red al subir.', 'error');
+      }
+      this.disabled = false;
+    };
 
-        async function checkAuthStatus() {
-            try {
-                const response = await fetch(`${API_BASE}/admin/status`);
-                const data = await response.json();
-                
-                if (data.isAdmin) {
-                    showAdminPanel();
-                } else {
-                    showLoginForm();
-                }
-            } catch (error) {
-                console.error('Error verificando autenticación:', error);
-                showLoginForm();
-            }
+    // Subida de orden.xlsx
+    const ordenFile = document.getElementById('ordenFile');
+    const uploadOrdenBtn = document.getElementById('uploadOrdenBtn');
+    document.getElementById('labelOrden').onclick = () => ordenFile.click();
+
+    ordenFile.addEventListener('change', () => {
+      uploadOrdenBtn.disabled = !ordenFile.files[0];
+      document.getElementById('labelOrden').textContent =
+        ordenFile.files[0] ? `Seleccionado: ${ordenFile.files[0].name}` : 'Arrastra el archivo orden.xlsx aquí o haz clic para seleccionar';
+    });
+
+    uploadOrdenBtn.onclick = async function() {
+      if (!ordenFile.files[0]) return;
+      this.disabled = true;
+      const formData = new FormData();
+      formData.append('archivo', ordenFile.files[0]);
+      try {
+        const resp = await fetch(`${API_BASE}/admin/upload-orden`, {
+          method: 'POST',
+          body: formData,
+          credentials: 'include'
+        });
+        const data = await resp.json();
+        if (data.success) {
+          showMessage(`Archivo subido: ${data.registros} registros procesados.`, 'success');
+          ordenFile.value = '';
+          document.getElementById('labelOrden').textContent = 'Arrastra el archivo orden.xlsx aquí o haz clic para seleccionar';
+        } else {
+          showMessage(data.error || 'Error en la subida', 'error');
         }
-
-        async function login() {
-            const password = passwordInput.value;
-            
-            if (!password) {
-                showMessage('Por favor, ingresa la contraseña', 'error');
-                return;
-            }
-
-            loginBtn.disabled = true;
-            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando...';
-
-            try {
-                const response = await fetch(`${API_BASE}/admin/login`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ password })
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    showAdminPanel();
-                    showMessage('Acceso autorizado', 'success');
-                } else {
-                    showMessage('Contraseña incorrecta', 'error');
-                }
-            } catch (error) {
-                console.error('Error en login:', error);
-                showMessage('Error de conexión', 'error');
-            } finally {
-                loginBtn.disabled = false;
-                loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Iniciar Sesión';
-            }
-        }
-
-        async function logout() {
-            try {
-                await fetch(`${API_BASE}/admin/logout`, { method: 'POST' });
-                showLoginForm();
-                showMessage('Sesión cerrada', 'success');
-            } catch (error) {
-                console.error('Error en logout:', error);
-            }
-        }
-
-        async function uploadGrupos() {
-            const file = gruposFile.files[0];
-            if (!file) return;
-
-            const formData = new FormData();
-            formData.append('archivo', file);
-
-            uploadGruposBtn.disabled = true;
-            uploadGruposBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Subiendo...';
-
-            try {
-                const response = await fetch(`${API_BASE}/admin/upload-grupos`, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    showMessage(`Archivo grupos.xlsx actualizado correctamente. ${data.registros} registros procesados.`, 'success');
-                    gruposFile.value = '';
-                    uploadGruposBtn.disabled = true;
-                    uploadGruposBtn.innerHTML = '<i class="fas fa-upload"></i> Subir Grupos.xlsx';
-                } else {
-                    showMessage(`Error: ${data.error}`, 'error');
-                }
-            } catch (error) {
-                console.error('Error subiendo grupos:', error);
-                showMessage('Error de conexión al subir archivo', 'error');
-            } finally {
-                uploadGruposBtn.disabled = false;
-                uploadGruposBtn.innerHTML = '<i class="fas fa-upload"></i> Subir Grupos.xlsx';
-            }
-        }
-
-        async function uploadOrden() {
-            const file = ordenFile.files[0];
-            if (!file) return;
-
-            const formData = new FormData();
-            formData.append('archivo', file);
-
-            uploadOrdenBtn.disabled = true;
-            uploadOrdenBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Subiendo...';
-
-            try {
-                const response = await fetch(`${API_BASE}/admin/upload-orden`, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    showMessage(`Archivo orden.xlsx actualizado correctamente. ${data.registros} registros procesados.`, 'success');
-                    ordenFile.value = '';
-                    uploadOrdenBtn.disabled = true;
-                    uploadOrdenBtn.innerHTML = '<i class="fas fa-upload"></i> Subir Orden.xlsx';
-                } else {
-                    showMessage(`Error: ${data.error}`, 'error');
-                }
-            } catch (error) {
-                console.error('Error subiendo orden:', error);
-                showMessage('Error de conexión al subir archivo', 'error');
-            } finally {
-                uploadOrdenBtn.disabled = false;
-                uploadOrdenBtn.innerHTML = '<i class="fas fa-upload"></i> Subir Orden.xlsx';
-            }
-        }
-
-        function showLoginForm() {
-            loginForm.style.display = 'block';
-            adminPanel.style.display = 'none';
-            logoutBtn.style.display = 'none';
-            passwordInput.value = '';
-        }
-
-        function showAdminPanel() {
-            loginForm.style.display = 'none';
-            adminPanel.style.display = 'block';
-            logoutBtn.style.display = 'block';
-        }
-
-        function showMessage(message, type) {
-            messageDiv.innerHTML = `<div class="message ${type}">${message}</div>`;
-            setTimeout(() => {
-                messageDiv.innerHTML = '';
-            }, 5000);
-        }
-    </script>
+      } catch {
+        showMessage('Error de red al subir', 'error');
+      }
+      this.disabled = false;
+    };
+  </script>
 </body>
 </html>
