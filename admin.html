@@ -10,24 +10,25 @@
     h2 { color: #6836cd;text-align: center; }
     .form-section { margin-bottom: 36px; }
     .inputfile {
-      width: 100%; min-height: 70px; border: 2px dashed #7c3aed; border-radius: 12px;
-      color: #644d8c; background: #fcfaff; text-align: center; padding: 24px; cursor: pointer;
-      font-size: 16px; margin-bottom:13px; transition: border-color .18s;
+      width: 100%; min-height: 60px; border: 2px dashed #7c3aed; border-radius: 10px;
+      color: #644d8c; background: #fcfaff; text-align: center; padding: 13px; cursor: pointer;
+      font-size: 17px; margin-bottom:11px; transition: border-color .18s;
+      display:block;
     }
     .inputfile:focus { border: 2px solid #5334ab; }
     .hidden { display: none; }
-    .btn { margin: 6px 0; padding: 10px 22px; border: none; background: #7c3aed; color: #fff; border-radius: 7px;
+    .btn { margin: 8px 0; padding: 10px 22px; border: none; background: #7c3aed; color: #fff; border-radius: 7px;
       font-size: 17px; box-shadow: 1px 1px 18px rgba(124,58,237,.13); cursor: pointer; transition: background .12s;
     }
     .btn[disabled] { background: #aaa; cursor: wait; }
     .status-message {
-      margin-bottom: 14px; text-align: center; padding: 8px 0;
+      margin-bottom: 12px; text-align: center; padding: 8px 0;
       border-radius: 8px; font-size: 16px;
     }
     .status-message.success { background: #e9faf2; border: 1px solid #35b677; color: #2d7c57; }
     .status-message.error { background: #fff4f4; border: 1px solid #e04f4f; color: #b70000; }
     input[type="password"] {
-      width: 92%; padding: 11px; font-size: 17px; border-radius: 8px; border: 1px solid #c6c4fd; margin-bottom:13px; outline: none;
+      width: 95%; padding: 10px; font-size: 17px; border-radius: 8px; border: 1px solid #c6c4fd; margin-bottom: 10px; outline: none;
     }
     @media (max-width: 520px) {
       .container { margin:6vw;padding:5vw 3vw;max-width:none;}
@@ -45,23 +46,22 @@
     <div id="adminPanel" class="form-section hidden">
       <label for="gruposFile" class="inputfile" id="labelGrupos">Arrastra <b>grupos.xlsx</b> aquí o haz clic</label>
       <input id="gruposFile" type="file" accept=".xlsx" class="hidden">
-      <button class="btn" id="uploadGruposBtn" disabled style="margin-bottom:12px;">Subir grupos.xlsx</button>
+      <button class="btn" id="uploadGruposBtn" disabled style="margin-bottom:9px;">Subir grupos.xlsx</button>
       <label for="ordenFile" class="inputfile" id="labelOrden">Arrastra <b>orden.xlsx</b> aquí o haz clic</label>
       <input id="ordenFile" type="file" accept=".xlsx" class="hidden">
-      <button class="btn" id="uploadOrdenBtn" disabled style="margin-bottom:16px;">Subir orden.xlsx</button>
+      <button class="btn" id="uploadOrdenBtn" disabled style="margin-bottom:12px;">Subir orden.xlsx</button>
       <button class="btn" style="background:#5e318b;" id="logoutBtn">Cerrar sesión</button>
     </div>
     <div style="text-align:center;color:#bbb;font-size:13px;margin-top:35px">ATOSA Admin &copy; 2025</div>
   </div>
 <script>
 const API_BASE = 'https://backend-aqb5.onrender.com';
-
 function showMessage(msg, type = 'success') {
   const el = document.getElementById('statusMsg');
   el.textContent = msg;
   el.className = `status-message ${type}`;
   el.classList.remove('hidden');
-  setTimeout(() => el.classList.add('hidden'), 6500);
+  setTimeout(() => el.classList.add('hidden'), 6300);
 }
 function showLoginForm() {
   document.getElementById('loginForm').classList.remove('hidden');
@@ -90,33 +90,22 @@ document.getElementById('loginBtn').onclick = async function() {
     } else {
       showMessage(data.message || 'Contraseña incorrecta', 'error');
     }
-  } catch (err) {
-    showMessage('Error de red en login', 'error');
-  }
+  } catch (err) { showMessage('Error de red en login', 'error'); }
   this.disabled = false;
 };
-
 window.addEventListener('DOMContentLoaded', async () => {
   try {
-    const resp = await fetch(`${API_BASE}/admin/status`, {
-      credentials: 'include'
-    });
+    const resp = await fetch(`${API_BASE}/admin/status`, { credentials: 'include' });
     const data = await resp.json();
     if (data.isAdmin) showAdminPanel();
     else showLoginForm();
-  } catch {
-    showLoginForm();
-  }
+  } catch { showLoginForm(); }
 });
 document.getElementById('logoutBtn').onclick = async function() {
-  await fetch(`${API_BASE}/admin/logout`, {
-    method: 'POST',
-    credentials: 'include'
-  });
+  await fetch(`${API_BASE}/admin/logout`, { method: 'POST', credentials: 'include' });
   showLoginForm();
   showMessage('Sesión cerrada', 'success');
 };
-
 const gruposFile = document.getElementById('gruposFile');
 const uploadGruposBtn = document.getElementById('uploadGruposBtn');
 document.getElementById('labelGrupos').onclick = () => gruposFile.click();
@@ -149,7 +138,6 @@ uploadGruposBtn.onclick = async function() {
   }
   this.disabled = false;
 };
-
 const ordenFile = document.getElementById('ordenFile');
 const uploadOrdenBtn = document.getElementById('uploadOrdenBtn');
 document.getElementById('labelOrden').onclick = () => ordenFile.click();
