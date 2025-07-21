@@ -470,6 +470,12 @@
             <i class="fas fa-download"></i>
             Descargar Excel
         </button>
+
+        <!-- Nuevo botón para ver cambios de catálogo -->
+        <button class="generate-btn" id="catalogoBtn" style="margin-top: 30px;">
+            <i class="fas fa-list"></i> Ver cambios de catálogo ATOSA
+        </button>
+        <div id="catalogoResultados" style="margin-top: 20px; display: none;"></div>
     </div>
 
     <script>
@@ -580,54 +586,4 @@
                 
                 let icon = '<i class="fas fa-cog fa-spin"></i>';
                 if (data.progress >= 100) {
-                    icon = data.error ? '<i class="fas fa-exclamation-triangle"></i>' : '<i class="fas fa-check-circle"></i>';
-                }
-
-                let statusText = `${icon} ${data.fase || 'Procesando'} (${data.progress}%)`;
-                if (data.eta && data.progress < 100) {
-                    statusText += ` - ETA: ${data.eta}s`;
-                }
-                
-                const email = document.getElementById('email').value;
-                if (email && data.progress < 100) {
-                    statusText += `<br><small>Se enviará a ${email} cuando esté listo</small>`;
-                }
-                
-                progressText.innerHTML = statusText;
-
-                if (data.progress >= 100) {
-                    clearInterval(progressInterval);
-                    
-                    if (data.error) {
-                        progressText.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Error: ${data.error}`;
-                        progressText.className = 'progress-text error';
-                    } else {
-                        progressText.innerHTML = '<i class="fas fa-check-circle"></i> ¡Excel generado correctamente!';
-                        progressText.className = 'progress-text success';
-                        
-                        if (email) {
-                            progressText.innerHTML += `<br><small><i class="fas fa-envelope"></i> Email enviado a ${email}</small>`;
-                        }
-                        
-                        const downloadBtn = document.getElementById('downloadBtn');
-                        downloadBtn.style.display = 'block';
-                        downloadBtn.classList.add('fade-in');
-                        downloadBtn.onclick = () => {
-                            window.open(`${API_BASE}/api/descarga-excel/${currentJobId}`, '_blank');
-                        };
-                    }
-                    
-                    const generateBtn = document.getElementById('generateBtn');
-                    generateBtn.disabled = false;
-                    generateBtn.innerHTML = '<i class="fas fa-magic"></i> Generar Excel';
-                }
-            } catch (error) {
-                console.error('Error verificando progreso:', error);
-            }
-        }
-
-        // Cargar grupos al cargar la página
-        window.addEventListener('load', cargarGrupos);
-    </script>
-</body>
-</html>
+                    icon = data.error ? '<
