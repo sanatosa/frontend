@@ -4,66 +4,64 @@
   <meta charset="UTF-8">
   <title>Generador de Excel B2B ATOSA</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 30px; }
-    label { font-weight: bold; }
-    select, input, button { margin: 8px 0 16px; font-size: 15px; }
-    #cambios-articulos { margin: 20px 0; border: 1px solid #bbb; padding: 12px; background: #f9f9fa; font-size: 14px; }
+    body { font-family: Arial, sans-serif; margin: 30px; background: #fff; color: #222;}
+    h1 { font-size: 2em; margin-bottom: 0.2em;}
+    label { font-weight: bold; display:block; margin-top: 10px;}
+    select, input[type=email] { width: 240px; padding: 3px;}
+    button, select, input { font-size: 16px; margin-top:5px;}
+    .btn { background: #7C3AED; color: #fff; border: none; border-radius: 6px; padding: 12px 24px;}
+    #progreso { margin-left: 15px; font-weight: bold; }
+    #descargar { margin-left: 1em; }
+    #cambios-articulos { background: #f7f6fa; margin: 20px 0 5px; padding:15px 10px; border-radius:7px; }
   </style>
 </head>
 <body>
   <h1>Generador de Excel B2B ATOSA</h1>
   <form id="excel-form">
-    <div>
-      <label for="grupo">Grupo</label><br>
-      <select id="grupo" name="grupo" required></select>
+    <label for="grupo">Grupo</label>
+    <select id="grupo" name="grupo" required>
+      <option>Cargando grupos...</option>
+    </select>
+    <label for="idioma">Idioma</label>
+    <select id="idioma">
+      <option>Español</option>
+      <option>Inglés</option>
+      <option>Francés</option>
+      <option>Italiano</option>
+    </select>
+    <label for="descuento">Descuento</label>
+    <select id="descuento">
+      <option value="0">Sin descuento</option>
+      <option value="1">1%</option>
+      <option value="2">2%</option>
+      <option value="3">3%</option>
+      <option value="4">4%</option>
+      <option value="5">5%</option>
+      <option value="6">6%</option>
+      <option value="7">7%</option>
+      <option value="8">8%</option>
+    </select>
+    <div style="margin-bottom:12px;margin-top:6px;">
+      <label style="display:inline;font-weight:normal;"><input type="checkbox" id="soloStock"> Solo en stock</label>
+      <label style="display:inline;font-weight:normal;margin-left:18px;"><input type="checkbox" id="sinImagenes"> Sin imágenes</label>
     </div>
-    <div>
-      <label for="idioma">Idioma</label><br>
-      <select id="idioma" name="idioma">
-        <option value="Español">Español</option>
-        <option value="Inglés">Inglés</option>
-        <option value="Francés">Francés</option>
-        <option value="Italiano">Italiano</option>
-      </select>
-    </div>
-    <div>
-      <label for="descuento">Descuento</label><br>
-      <select id="descuento" name="descuento">
-        <option value="0">Sin descuento</option>
-        <option value="1">1%</option>
-        <option value="2">2%</option>
-        <option value="3">3%</option>
-        <option value="4">4%</option>
-        <option value="5">5%</option>
-        <option value="6">6%</option>
-        <option value="7">7%</option>
-        <option value="8">8%</option>
-      </select>
-    </div>
-    <div>
-      <label><input type="checkbox" id="soloStock" name="soloStock"> Solo en stock</label>
-    </div>
-    <div>
-      <label><input type="checkbox" id="sinImagenes" name="sinImagenes"> Sin imágenes</label>
-    </div>
-    <div>
-      <label for="email">Email para recibir el archivo (opcional)</label><br>
-      <input type="email" id="email" name="email" autocomplete="off" style="width:280px">
-    </div>
-    <button type="submit">Generar Excel</button>
+    <label for="email" style="margin-bottom:0;">Email para recibir el archivo (opcional)</label>
+    <input type="email" id="email" style="width:290px" placeholder="tu correo (opcional)">
+    <br>
+    <button type="submit" class="btn">Generar Excel</button>
     <span id="progreso"></span>
-    <a id="descargar" style="display:none; margin-left:12px;">Descargar Excel</a>
+    <a id="descargar" style="display:none;">Descargar Excel</a>
   </form>
 
-  <hr>
+  <hr style="margin:32px 0 12px;">
 
-  <button id="ver-cambios">Ver cambios de artículos</button>
-  <div id="cambios-articulos">
-    <!-- Aquí aparecerán los cambios de altas y bajas -->
+  <div style="margin-bottom:8px;">
+    <button id="ver-cambios" class="btn" style="padding: 7px 20px; font-size:15px; background:#333;">Ver cambios de artículos</button>
   </div>
+  <div id="cambios-articulos"></div>
 
   <script>
-    // Cargar lista de grupos al iniciar
+    // Cargar grupos
     async function cargarGrupos() {
       const resp = await fetch('/api/grupos');
       const data = await resp.json();
@@ -78,7 +76,7 @@
     }
     cargarGrupos();
 
-    // Envío de formulario para generar Excel
+    // Envío formulario
     document.getElementById('excel-form').onsubmit = async function(e) {
       e.preventDefault();
       document.getElementById('progreso').textContent = 'Preparando generación...';
@@ -105,7 +103,7 @@
       }
     };
 
-    // Comprobar progreso y descargar
+    // Progreso y descarga
     async function comprobarProgreso(jobId) {
       const progreso = document.getElementById('progreso');
       const enlace = document.getElementById('descargar');
@@ -126,10 +124,10 @@
           enlace.download = dat.filename;
           enlace.textContent = 'Descargar Excel';
         }
-      }, 1000);
+      }, 1200);
     }
 
-    // Cambios de artículos: altas y bajas
+    // Consulta de cambios de artículos
     document.getElementById('ver-cambios').onclick = async function() {
       const res = await fetch('/api/cambios-articulos');
       const data = await res.json();
