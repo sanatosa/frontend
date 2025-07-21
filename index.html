@@ -4,15 +4,14 @@
   <meta charset="UTF-8">
   <title>Generador de Excel B2B ATOSA</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 30px; background: #fff; color: #222;}
-    h1 { font-size: 2em; margin-bottom: 0.2em;}
-    label { font-weight: bold; display:block; margin-top: 10px;}
-    select, input[type=email] { width: 240px; padding: 3px;}
-    button, select, input { font-size: 16px; margin-top:5px;}
-    .btn { background: #7C3AED; color: #fff; border: none; border-radius: 6px; padding: 12px 24px;}
-    #progreso { margin-left: 15px; font-weight: bold; }
-    #descargar { margin-left: 1em; }
-    #cambios-articulos { background: #f7f6fa; margin: 20px 0 5px; padding:15px 10px; border-radius:7px; }
+    body { font-family: Arial, sans-serif; margin: 30px; }
+    h1 { font-size: 2em; }
+    label { font-weight: bold; margin-top: 12px; display: block;}
+    select, input[type=email], button { font-size: 16px; margin-top:6px;}
+    #progreso { margin-left: 14px; color: #7C3AED; font-weight:bold;}
+    #descargar { margin-left:16px; }
+    #cambios-articulos { background:#f9f9fa; margin:24px 0 5px; padding:10px 14px; border-radius:7px; }
+    hr { margin:38px 0 18px;}
   </style>
 </head>
 <body>
@@ -22,6 +21,7 @@
     <select id="grupo" name="grupo" required>
       <option>Cargando grupos...</option>
     </select>
+
     <label for="idioma">Idioma</label>
     <select id="idioma">
       <option>Español</option>
@@ -29,6 +29,7 @@
       <option>Francés</option>
       <option>Italiano</option>
     </select>
+
     <label for="descuento">Descuento</label>
     <select id="descuento">
       <option value="0">Sin descuento</option>
@@ -41,42 +42,48 @@
       <option value="7">7%</option>
       <option value="8">8%</option>
     </select>
-    <div style="margin-bottom:12px;margin-top:6px;">
-      <label style="display:inline;font-weight:normal;"><input type="checkbox" id="soloStock"> Solo en stock</label>
-      <label style="display:inline;font-weight:normal;margin-left:18px;"><input type="checkbox" id="sinImagenes"> Sin imágenes</label>
+
+    <div style="margin:10px 0 6px;">
+      <label style="font-weight:normal;display:inline;"><input type="checkbox" id="soloStock"> Solo en stock</label>
+      <label style="font-weight:normal;display:inline;margin-left:22px;"><input type="checkbox" id="sinImagenes"> Sin imágenes</label>
     </div>
+
     <label for="email" style="margin-bottom:0;">Email para recibir el archivo (opcional)</label>
-    <input type="email" id="email" style="width:290px" placeholder="tu correo (opcional)">
+    <input type="email" id="email" style="width:295px" autocomplete="off">
+
     <br>
-    <button type="submit" class="btn">Generar Excel</button>
+    <button type="submit" style="background: #7C3AED; color: #fff; border-radius:6px; padding:9px 20px; border: none; font-size: 17px;">Generar Excel</button>
     <span id="progreso"></span>
     <a id="descargar" style="display:none;">Descargar Excel</a>
   </form>
 
-  <hr style="margin:32px 0 12px;">
+  <hr>
 
-  <div style="margin-bottom:8px;">
-    <button id="ver-cambios" class="btn" style="padding: 7px 20px; font-size:15px; background:#333;">Ver cambios de artículos</button>
-  </div>
+  <!-- NUEVO: Bloque separado para histórico, después del resto -->
+  <button id="ver-cambios" style="background: #333; color:#fff; border-radius:4px; font-size:15px; padding: 7px 16px; border:none;">Ver cambios de artículos</button>
   <div id="cambios-articulos"></div>
 
   <script>
-    // Cargar grupos
+    // Carga dinámica de grupos al arrancar
     async function cargarGrupos() {
-      const resp = await fetch('/api/grupos');
-      const data = await resp.json();
-      const sel = document.getElementById('grupo');
-      sel.innerHTML = '';
-      data.grupos.forEach(grupo => {
-        const opt = document.createElement('option');
-        opt.value = grupo;
-        opt.textContent = grupo;
-        sel.appendChild(opt);
-      });
+      try {
+        const resp = await fetch('/api/grupos');
+        const data = await resp.json();
+        const sel = document.getElementById('grupo');
+        sel.innerHTML = '';
+        data.grupos.forEach(grupo => {
+          const opt = document.createElement('option');
+          opt.value = grupo;
+          opt.textContent = grupo;
+          sel.appendChild(opt);
+        });
+      } catch(e) {
+        document.getElementById('grupo').innerHTML='<option>Sin conexión</option>';
+      }
     }
     cargarGrupos();
 
-    // Envío formulario
+    // Envío de formulario
     document.getElementById('excel-form').onsubmit = async function(e) {
       e.preventDefault();
       document.getElementById('progreso').textContent = 'Preparando generación...';
@@ -103,7 +110,7 @@
       }
     };
 
-    // Progreso y descarga
+    // Seguimiento de progreso
     async function comprobarProgreso(jobId) {
       const progreso = document.getElementById('progreso');
       const enlace = document.getElementById('descargar');
@@ -124,15 +131,15 @@
           enlace.download = dat.filename;
           enlace.textContent = 'Descargar Excel';
         }
-      }, 1200);
+      }, 1400);
     }
 
-    // Consulta de cambios de artículos
+    // HISTÓRICO - BLOQUE INDEPENDIENTE
     document.getElementById('ver-cambios').onclick = async function() {
       const res = await fetch('/api/cambios-articulos');
       const data = await res.json();
       let html = `<p><b>${data.resumen.numAltas}</b> altas, <b>${data.resumen.numBajas}</b> bajas</p>`;
-      html += "<b>Altas:</b><br>" + (data.nuevas.length ? data.nuevas.join(', ') : 'Ninguna') + "<br>";
+      html += "<b>Altas:</b><br>" + (data.nuevas.length ? data.nuevas.join(', ') : 'Ninguna') + "<br><br>";
       html += "<b>Bajas:</b><br>" + (data.bajas.length ? data.bajas.join(', ') : 'Ninguna');
       document.getElementById('cambios-articulos').innerHTML = html;
     };
