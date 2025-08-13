@@ -343,7 +343,8 @@
     </div>
     
     <script>
-        const API_URL = 'https://webb2b-production.up.railway.app';
+        // IMPORTANTE: Usar la URL correcta de tu backend
+        const API_URL = 'https://webb2b-production.up.railway.app'; // Tu URL de Railway
         let currentJobId = null;
         let progressInterval = null;
         
@@ -383,15 +384,23 @@
         async function cargarGrupos() {
             try {
                 const response = await fetch(`${API_URL}/api/grupos`);
+                if (!response.ok) {
+                    throw new Error('Error al cargar grupos');
+                }
                 const data = await response.json();
                 const select = document.getElementById('grupo');
                 select.innerHTML = '<option value="">Seleccionar grupo...</option>';
-                data.grupos.forEach(grupo => {
-                    const option = document.createElement('option');
-                    option.value = grupo;
-                    option.textContent = grupo;
-                    select.appendChild(option);
-                });
+                
+                if (data.grupos && data.grupos.length > 0) {
+                    data.grupos.forEach(grupo => {
+                        const option = document.createElement('option');
+                        option.value = grupo;
+                        option.textContent = grupo;
+                        select.appendChild(option);
+                    });
+                } else {
+                    select.innerHTML = '<option value="">No hay grupos disponibles</option>';
+                }
             } catch (error) {
                 console.error('Error cargando grupos:', error);
                 document.getElementById('grupo').innerHTML = '<option value="">Error cargando grupos</option>';
@@ -417,7 +426,7 @@
                 email: document.getElementById('email').value
             };
             
-            await generarExcel(params, 'grupos');
+            await generarExcel(params);
         });
         
         // Formulario de pedido (nuevo)
@@ -452,7 +461,10 @@
                     body: formData
                 });
                 
-                if (!response.ok) throw new Error('Error al iniciar la generación');
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Error al iniciar la generación');
+                }
                 
                 const data = await response.json();
                 currentJobId = data.jobId;
@@ -460,14 +472,14 @@
                 
             } catch (error) {
                 console.error('Error:', error);
-                showError('Error al generar el Excel del pedido');
+                showError(error.message || 'Error al generar el Excel del pedido');
                 hideProgress();
                 enableButtons();
             }
         }
         
-        // Generar Excel (función original modificada)
-        async function generarExcel(params, tipo) {
+        // Generar Excel (función original)
+        async function generarExcel(params) {
             try {
                 hideMessages();
                 showProgress();
@@ -479,7 +491,10 @@
                     body: JSON.stringify(params)
                 });
                 
-                if (!response.ok) throw new Error('Error al iniciar la generación');
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Error al iniciar la generación');
+                }
                 
                 const data = await response.json();
                 currentJobId = data.jobId;
@@ -487,7 +502,7 @@
                 
             } catch (error) {
                 console.error('Error:', error);
-                showError('Error al generar el Excel');
+                showError(error.message || 'Error al generar el Excel');
                 hideProgress();
                 enableButtons();
             }
@@ -501,6 +516,10 @@
                 
                 try {
                     const response = await fetch(`${API_URL}/api/progreso/${currentJobId}`);
+                    if (!response.ok) {
+                        throw new Error('Error al obtener progreso');
+                    }
+                    
                     const data = await response.json();
                     
                     updateProgress(data.progress, data.fase, data.eta);
@@ -526,16 +545,24 @@
         }
         
         async function descargarExcel(jobId, filename) {
-            const response = await fetch(`${API_URL}/api/descarga-excel/${jobId}`);
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename || 'listado.xlsx';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
+            try {
+                const response = await fetch(`${API_URL}/api/descarga-excel/${jobId}`);
+                if (!response.ok) {
+                    throw new Error('Error al descargar el archivo');
+                }
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename || 'listado.xlsx';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            } catch (error) {
+                console.error('Error descargando Excel:', error);
+                showError('Error al descargar el archivo');
+            }
         }
         
         function updateProgress(progress, fase, eta) {
@@ -563,12 +590,18 @@
             const errorEl = document.getElementById('error');
             errorEl.textContent = message;
             errorEl.classList.add('active');
+            setTimeout(() => {
+                errorEl.classList.remove('active');
+            }, 5000);
         }
         
         function showSuccess(message) {
             const successEl = document.getElementById('success');
             successEl.textContent = message;
             successEl.classList.add('active');
+            setTimeout(() => {
+                successEl.classList.remove('active');
+            }, 5000);
         }
         
         function hideMessages() {
@@ -584,8 +617,10 @@
             document.querySelectorAll('button[type="submit"]').forEach(btn => btn.disabled = false);
         }
         
-        // Inicializar
-        cargarGrupos();
+        // Inicializar - cargar grupos cuando la página carga
+        window.addEventListener('DOMContentLoaded', () => {
+            cargarGrupos();
+        });
     </script>
 </body>
 </html>
