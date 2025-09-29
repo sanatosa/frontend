@@ -1,87 +1,12 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Listado ATOSA</title>
-  <style>
-    /* deja tu CSS aquí; no cambio nada visual */
-  </style>
-</head>
-<body>
-  <h1>Listado ATOSA</h1>
-
-  <div>
-    <label>Grupo:
-      <select id="grupo"></select>
-    </label>
-    <label>Idioma:
-      <select id="idioma">
-        <option>Español</option>
-        <option>Inglés</option>
-        <option>Francés</option>
-        <option>Italiano</option>
-      </select>
-    </label>
-    <label>Descuento: <input id="descuento" type="number" value="0" step="1"/></label>
-    <label><input id="soloStock" type="checkbox"/> Solo stock</label>
-    <label><input id="sinImagenes" type="checkbox"/> Sin imágenes</label>
-    <label>Email (opcional): <input id="email" type="email"/></label>
-    <button id="btnGenerar">Generar Excel</button>
-  </div>
-
-  <div id="estado"></div>
-
-  <script>
-    // Lee la URL del backend desde env de Netlify si existe; si no, usa relativa
-    const API_BASE = window.ENV_VITE_API_BASE || (typeof VITE_API_BASE !== 'undefined' ? VITE_API_BASE : '') || '';
-
-    async function cargarGrupos() {
-      const res = await fetch(`${API_BASE}/api/grupos`);
-      const data = await res.json();
-      const sel = document.getElementById('grupo');
-      sel.innerHTML = '';
-      (data.grupos || []).forEach(g => {
-        const opt = document.createElement('option');
-        opt.value = g; opt.textContent = g;
-        sel.appendChild(opt);
-      });
-    }
-
-    async function generarExcel() {
-      const grupo = document.getElementById('grupo').value;
-      const idioma = document.getElementById('idioma').value;
-      const descuento = parseInt(document.getElementById('descuento').value||0,10);
-      const soloStock = document.getElementById('soloStock').checked;
-      const sinImagenes = document.getElementById('sinImagenes').checked;
-      const email = document.getElementById('email').value || undefined;
-
-      const estado = document.getElementById('estado');
-      estado.textContent = 'Iniciando…';
-
-      const start = await fetch(`${API_BASE}/api/genera-excel-final-async`, {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ grupo, idioma, descuento, soloStock, sinImagenes, email })
-      }).then(r=>r.json());
-
-      const jobId = start.jobId;
-      if (!jobId) { estado.textContent = 'No se pudo iniciar el trabajo.'; return; }
-
-      // Polling progreso
-      const timer = setInterval(async () => {
-        const p = await fetch(`${API_BASE}/api/progreso/${jobId}`).then(r=>r.json());
-        estado.textContent = `Progreso: ${p.progress || 0}% | Fase: ${p.fase || ''}`;
-        if (p.error) { clearInterval(timer); estado.textContent = `Error: ${p.error}`; }
-        if (p.progress >= 100 && p.filename) {
-          clearInterval(timer);
-          estado.innerHTML = `Listo: <a href="${API_BASE}/api/descarga-excel/${jobId}">Descargar ${p.filename}</a>`;
-        }
-      }, 1500);
-    }
-
-    document.getElementById('btnGenerar').addEventListener('click', generarExcel);
-    cargarGrupos();
-  </script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Estado ATOSA</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
 </html>
